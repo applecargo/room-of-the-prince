@@ -1,0 +1,11 @@
+commit b173cf28174b17f7df96c298f83c16a00d22e312
+Merge: c22e04f5b 4b234b080
+Author: Jiang Jiang Jian <jack@espressif.com>
+Date:   Sat Jan 12 19:54:51 2019 +0800
+
+    Merge branch 'bugfix/wifi_fix_incorrect_tx_complete_state' into 'master'
+    
+    esp32: fix the incorrect tx complete state issue
+    
+    See merge request idf/esp-idf!4083
+
