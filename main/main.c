@@ -7,8 +7,15 @@
 #include "esp_mesh_internal.h"
 #include "nvs_flash.h"
 
+/* mesh */
+static const char *MESH_TAG = "mesh_main";
+static const uint8_t MESH_ID[6] = { 0x77, 0x77, 0x77, 0x77, 0x77, 0x77}; /* mac addr. */
+void mesh_event_handler(mesh_event_t event) {
+}                                              /* sth. mandatory ! */
+
 /* arduino */
 #include "Arduino.h"
+static const uint8_t LED_BUILTIN = 2; //doit
 static bool is_running_arduino = true;
 void setup();
 void loop();
@@ -19,10 +26,6 @@ void arduino_main(void *arg) {
   }
   vTaskDelete(NULL);
 }
-
-/* mesh */
-static const char *MESH_TAG = "mesh_main";
-static const uint8_t MESH_ID[6] = { 0x77, 0x77, 0x77, 0x77, 0x77, 0x77}; /* mac addr. */
 
 void app_main()
 {
@@ -59,7 +62,7 @@ void app_main()
   memcpy((uint8_t *) &cfg.mesh_id, MESH_ID, 6);
 
   /* mesh event callback */
-  // cfg.event_cb = &mesh_event_handler;
+  cfg.event_cb = &mesh_event_handler;
 
   /* router */
   cfg.channel = CONFIG_MESH_CHANNEL;
@@ -81,14 +84,26 @@ void app_main()
   initArduino();
   setup();
   xTaskCreate(arduino_main, "arduino_mainloop", 3072, NULL, 5, NULL);
+  // BaseType_t xTaskCreate(TaskFunction_t pvTaskCode,
+  //                        const char * const pcName,
+  //                        unsigned short usStackDepth,
+  //                        void *pvParameters,
+  //                        UBaseType_t uxPriority,
+  //                        TaskHandle_t *pxCreatedTask
+  //                        );
 }
 
 void setup()
 {
-  pinMode(10, OUTPUT);
+  // ESP_LOGI(MESH_TAG, "setup()");
+  pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void loop()
 {
-  digitalWrite(10, HIGH);
+  // ESP_LOGI(MESH_TAG, "loop()");
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(100);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(1000);
 }
