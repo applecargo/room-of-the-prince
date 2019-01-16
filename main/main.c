@@ -10,8 +10,43 @@
 /* mesh */
 static const char *MESH_TAG = "mesh_main";
 static const uint8_t MESH_ID[6] = { 0x77, 0x77, 0x77, 0x77, 0x77, 0x77}; /* mac addr. */
-void mesh_event_handler(mesh_event_t event) {
-}                                              /* sth. mandatory ! */
+#define RX_SIZE (1500)
+#define TX_SIZE (1460)
+static uint8_t tx_buf[TX_SIZE] = { 0, };
+static uint8_t rx_buf[RX_SIZE] = { 0, };
+static bool is_running = true;
+
+/* identity */
+#define MATE_MOTION_SENSOR 0x01
+#define MATE_RELAY_CONTROLLER 0x02
+int mate_id = MATE_RELAY_CONTROLLER;
+
+/* vocabularies */
+char voca[10][256] = {0, };
+void mate_motion_sensor_vocabulary()
+{
+  strcpy(voca[0], "0Hello, I'm a motion detector, called Meisenstroofpen.");
+  strcpy(voca[1], "1Hey! There's something moving!!!");
+  strcpy(voca[2], "2Well.. nothing is moving. How come?");
+  strcpy(voca[3], "3Seriously, I want to know what was the thing right now? any idea?");
+  strcpy(voca[4], "4Could you be more stay still for me? I cannot concentrate!");
+}
+void mate_motion_sensor_react()
+{
+  ;
+}
+void mate_relay_controller_vocabulary()
+{
+  strcpy(voca[0], "0Yo, I'm a relay controller, called Diego Larambla.");
+  strcpy(voca[1], "1What! You mean there's a person?");
+  strcpy(voca[2], "2Tick, tack, toe--.");
+  strcpy(voca[3], "3I don't know either, amigo.");
+  strcpy(voca[4], "4Ya well, I do sincerely apologize, amigo.");
+}
+void mate_relay_controller_react()
+{
+  ;
+}
 
 /* arduino */
 #include "Arduino.h"
@@ -25,6 +60,89 @@ void arduino_main(void *arg) {
     loop();
   }
   vTaskDelete(NULL);
+}
+
+/* mesh comm. */
+void esp_mesh_p2p_tx_main(void *arg)
+{
+  int i;
+  esp_err_t err;
+  int count = 0;
+  int idx = 0;
+  mesh_addr_t route_table[CONFIG_MESH_ROUTE_TABLE_SIZE];
+  int route_table_size = 0;
+  mesh_data_t data;
+  data.data = tx_buf;
+  data.size = sizeof(tx_buf);
+  data.proto = MESH_PROTO_BIN;
+// #ifdef MESH_P2P_TOS_OFF
+//   data.tos = MESH_TOS_DEF;
+// #endif /* MESH_P2P_TOS_OFF */
+//
+  is_running = true;
+  while (is_running) {
+    count++;
+    idx = count % 5;
+    esp_mesh_get_routing_table((mesh_addr_t *) &route_table, CONFIG_MESH_ROUTE_TABLE_SIZE * 6, &route_table_size);
+    memcpy(tx_buf, (uint8_t *)voca[idx], 256);
+    for (i = 0; i < route_table_size; i++) {
+      err = esp_mesh_send(&route_table[i], &data, MESH_DATA_P2P, NULL, 0);
+      if (err) {
+        ESP_LOGE(MESH_TAG, "WHAT?");
+      }
+    }
+    //delay 100 ms
+    vTaskDelay(100 / portTICK_RATE_MS);
+  }
+  vTaskDelete(NULL);
+}
+
+void esp_mesh_p2p_rx_main(void *arg)
+{
+  // int recv_count = 0;
+  esp_err_t err;
+  mesh_addr_t from;
+  // int send_count = 0;
+  mesh_data_t data;
+  int flag = 0;
+  data.data = rx_buf;
+  data.size = RX_SIZE;
+
+  is_running = true;
+  while (is_running) {
+    data.size = RX_SIZE;
+    err = esp_mesh_recv(&from, &data, portMAX_DELAY, &flag, NULL, 0);
+    if (err != ESP_OK || !data.size) {
+      ESP_LOGE(MESH_TAG, "err:0x%x, size:%d", err, data.size);
+      continue;
+    }
+    ESP_LOGI(MESH_TAG, "RX:%s", data.data);
+    //delay 10 ms
+    vTaskDelay(10 / portTICK_RATE_MS);
+  }
+  vTaskDelete(NULL);
+}
+
+esp_err_t esp_mesh_comm_p2p_start(void)
+{
+  static bool is_comm_p2p_started = false;
+  if (!is_comm_p2p_started) {
+    is_comm_p2p_started = true;
+    xTaskCreate(esp_mesh_p2p_tx_main, "MPTX", 3072, NULL, 5, NULL);
+    xTaskCreate(esp_mesh_p2p_rx_main, "MPRX", 3072, NULL, 5, NULL);
+  }
+  return ESP_OK;
+}
+
+/* mesh_event_handler --> sth. mandatory ! */
+void mesh_event_handler(mesh_event_t event) {
+  switch (event.id) {
+  case MESH_EVENT_PARENT_CONNECTED:
+    esp_mesh_comm_p2p_start();
+    break;
+  default:
+    ;
+  }
 }
 
 void app_main()
@@ -97,13 +215,29 @@ void setup()
 {
   // ESP_LOGI(MESH_TAG, "setup()");
   pinMode(LED_BUILTIN, OUTPUT);
+
+  //
+  if (mate_id == MATE_MOTION_SENSOR) {
+    mate_motion_sensor_vocabulary();
+  } else if (mate_id == MATE_RELAY_CONTROLLER) {
+    mate_relay_controller_vocabulary();
+  }
 }
 
 void loop()
 {
   // ESP_LOGI(MESH_TAG, "loop()");
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(100);
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(1000);
+
+  // //simple blink test-code.
+  // digitalWrite(LED_BUILTIN, HIGH);
+  // delay(100);
+  // digitalWrite(LED_BUILTIN, LOW);
+  // delay(1000);
+
+  //
+  if (mate_id == MATE_MOTION_SENSOR) {
+    mate_motion_sensor_react();
+  }
+
+  vTaskDelay(10 / portTICK_RATE_MS);
 }
