@@ -6,6 +6,8 @@
 #include "esp_mesh.h"
 #include "esp_mesh_internal.h"
 #include "nvs_flash.h"
+#include <string>
+#include <vector>
 
 /* mesh */
 static const char *MESH_TAG = "mesh_main";
@@ -20,6 +22,9 @@ static bool is_running = true;
 #define MATE_MOTION_SENSOR 0x01
 #define MATE_RELAY_CONTROLLER 0x02
 int mate_id = MATE_RELAY_CONTROLLER;
+
+std::string hello = "hello.";
+std::vector<std::string> vec_str;
 
 /* vocabularies */
 char voca[10][256] = {0, };
@@ -48,19 +53,9 @@ void mate_relay_controller_react()
   ;
 }
 
-/* arduino */
+//file: main.cpp
 #include "Arduino.h"
 static const uint8_t LED_BUILTIN = 2; //doit
-static bool is_running_arduino = true;
-void setup();
-void loop();
-void arduino_main(void *arg) {
-  is_running_arduino = true;
-  while (is_running_arduino) {
-    loop();
-  }
-  vTaskDelete(NULL);
-}
 
 /* mesh comm. */
 void esp_mesh_p2p_tx_main(void *arg)
@@ -145,8 +140,7 @@ void mesh_event_handler(mesh_event_t event) {
   }
 }
 
-void app_main()
-{
+void setup(){
   /* nvs flash */
   ESP_ERROR_CHECK(nvs_flash_init());
 
@@ -174,7 +168,8 @@ void app_main()
   #ifdef MESH_FIX_ROOT
   ESP_ERROR_CHECK(esp_mesh_fix_root(1));
   #endif
-  mesh_cfg_t cfg = MESH_INIT_CONFIG_DEFAULT();
+  mesh_cfg_t cfg;
+  cfg.crypto_funcs = &g_wifi_default_mesh_crypto_funcs;
 
   /* mesh ID */
   memcpy((uint8_t *) &cfg.mesh_id, MESH_ID, 6);
@@ -189,7 +184,7 @@ void app_main()
   memcpy((uint8_t *) &cfg.router.password, CONFIG_MESH_ROUTER_PASSWD, strlen(CONFIG_MESH_ROUTER_PASSWD));
 
   /* mesh softAP */
-  ESP_ERROR_CHECK(esp_mesh_set_ap_authmode(CONFIG_MESH_AP_AUTHMODE));
+  ESP_ERROR_CHECK(esp_mesh_set_ap_authmode((wifi_auth_mode_t)CONFIG_MESH_AP_AUTHMODE));
   cfg.mesh_ap.max_connection = CONFIG_MESH_AP_CONNECTIONS;
   memcpy((uint8_t *) &cfg.mesh_ap.password, CONFIG_MESH_AP_PASSWD, strlen(CONFIG_MESH_AP_PASSWD));
   ESP_ERROR_CHECK(esp_mesh_set_config(&cfg));
@@ -198,21 +193,8 @@ void app_main()
   ESP_ERROR_CHECK(esp_mesh_start());
   ESP_LOGI(MESH_TAG, "mesh starts successfully, heap:%d, %s\n",  esp_get_free_heap_size(), esp_mesh_is_root_fixed() ? "root fixed" : "root not fixed");
 
-  /* arduino init & setup */
-  initArduino();
-  setup();
-  xTaskCreate(arduino_main, "arduino_mainloop", 3072, NULL, 5, NULL);
-  // BaseType_t xTaskCreate(TaskFunction_t pvTaskCode,
-  //                        const char * const pcName,
-  //                        unsigned short usStackDepth,
-  //                        void *pvParameters,
-  //                        UBaseType_t uxPriority,
-  //                        TaskHandle_t *pxCreatedTask
-  //                        );
-}
+  // arduino start >>>
 
-void setup()
-{
   // ESP_LOGI(MESH_TAG, "setup()");
   pinMode(LED_BUILTIN, OUTPUT);
 
@@ -222,10 +204,10 @@ void setup()
   } else if (mate_id == MATE_RELAY_CONTROLLER) {
     mate_relay_controller_vocabulary();
   }
+
 }
 
-void loop()
-{
+void loop(){
   // ESP_LOGI(MESH_TAG, "loop()");
 
   // //simple blink test-code.
