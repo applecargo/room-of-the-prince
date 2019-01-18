@@ -1,52 +1,21 @@
-commit 81844f53600c3035fda6b9affb79c19573ee8f1d
-Author: me-no-dev <hristo@espressif.com>
-Date:   Sat Jan 12 13:02:38 2019 +0100
+commit 6cf307dbd1cfc46d489609cf675fab2806e6054d
+Author: Me No Dev <me-no-dev@users.noreply.github.com>
+Date:   Mon Jan 14 19:30:07 2019 +0800
 
-    Add API to feed the loop WDT (call from loop only)
+    Fix copy/paste error in RMT
+    
+    Fixes: https://github.com/espressif/arduino-esp32/issues/2316
 
-diff --git a/cores/esp32/esp32-hal-cpu.c b/cores/esp32/esp32-hal-cpu.c
-index d9e95dc..c9b8f4c 100644
---- a/cores/esp32/esp32-hal-cpu.c
-+++ b/cores/esp32/esp32-hal-cpu.c
-@@ -131,10 +131,8 @@ bool setCpuFrequencyMhz(uint32_t cpu_freq_mhz){
-     uint32_t capb, apb;
-     //Get XTAL Frequency and calculate min CPU MHz
-     rtc_xtal_freq_t xtal = rtc_clk_xtal_freq_get();
--    uint32_t min_cpu_mhz = 10;
-     if(xtal > RTC_XTAL_FREQ_AUTO){
-         if(xtal < RTC_XTAL_FREQ_40M) {
--            min_cpu_mhz = xtal / 2; //13Mhz for 26Mhz XTAL
-             if(cpu_freq_mhz <= xtal && cpu_freq_mhz != xtal && cpu_freq_mhz != (xtal/2)){
-                 log_e("Bad frequency: %u MHz! Options are: 240, 160, 80, %u and %u MHz", cpu_freq_mhz, xtal, xtal/2);
-                 return false;
-diff --git a/cores/esp32/esp32-hal-misc.c b/cores/esp32/esp32-hal-misc.c
-index 06ed677..27f5ad2 100644
---- a/cores/esp32/esp32-hal-misc.c
-+++ b/cores/esp32/esp32-hal-misc.c
-@@ -69,6 +69,13 @@ void disableLoopWDT(){
-         }
-     }
- }
-+
-+void feedLoopWDT(){
-+    esp_err_t err = esp_task_wdt_reset();
-+    if(err != ESP_OK){
-+        log_e("Failed to feed WDT! Error: %d", err);
-+    }
-+}
- #endif
+diff --git a/cores/esp32/esp32-hal-rmt.c b/cores/esp32/esp32-hal-rmt.c
+index 072924b..0596f60 100644
+--- a/cores/esp32/esp32-hal-rmt.c
++++ b/cores/esp32/esp32-hal-rmt.c
+@@ -156,7 +156,7 @@ bool rmtSetCarrier(rmt_obj_t* rmt, bool carrier_en, bool carrier_level, uint32_t
+     RMT_MUTEX_LOCK(channel);
  
- void enableCore0WDT(){
-diff --git a/cores/esp32/esp32-hal.h b/cores/esp32/esp32-hal.h
-index 36ffcca..ef87a04 100644
---- a/cores/esp32/esp32-hal.h
-+++ b/cores/esp32/esp32-hal.h
-@@ -77,6 +77,8 @@ float temperatureRead();
- //enable/disable WDT for Arduino's setup and loop functions
- void enableLoopWDT();
- void disableLoopWDT();
-+//feed WDT for the loop task
-+void feedLoopWDT();
- #endif
+     RMT.carrier_duty_ch[channel].low = low;
+-    RMT.carrier_duty_ch[channel].low = high;
++    RMT.carrier_duty_ch[channel].high = high;
+     RMT.conf_ch[channel].conf0.carrier_en = carrier_en;
+     RMT.conf_ch[channel].conf0.carrier_out_lv = carrier_level;
  
- //enable/disable WDT for the IDLE task on Core 0 (SYSTEM)
