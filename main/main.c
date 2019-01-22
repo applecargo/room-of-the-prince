@@ -10,14 +10,9 @@
 #include "Arduino.h"
 #include "config.h"
 
-/* wifi */
-const uint8_t my_mac[6] = { 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, ID };
-mesh_addr_t base_addr;
-
-/* mesh */
-const char *MESH_TAG = "room_mesh";
-const uint8_t MESH_ID[6] = {0x77, 0x77, 0x77, 0x77, 0x77, 0x77};
-/* mesh_id is ID of the mesh (the group, not each dev.) --> mesh ID should be the same for all */
+// wifi
+uint8_t my_mac_sta[6] = { 0, };
+uint8_t my_mac_ap[6] = { 0, };
 
 void app_main()
 {
@@ -38,9 +33,11 @@ void app_main()
   wifi_init_config_t config = WIFI_INIT_CONFIG_DEFAULT();
   ESP_ERROR_CHECK(esp_wifi_init(&config));
   ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_FLASH));
-  /* set mac addr for STA */
-  ESP_ERROR_CHECK(esp_wifi_set_mac(WIFI_IF_STA, my_mac));
   ESP_ERROR_CHECK(esp_wifi_start());
+
+  /* get wifi info */
+  ESP_ERROR_CHECK(esp_wifi_get_mac(WIFI_IF_STA, my_mac_sta));
+  ESP_ERROR_CHECK(esp_wifi_get_mac(WIFI_IF_AP, my_mac_ap));
 
   /* mesh initialization */
   ESP_ERROR_CHECK(esp_mesh_init());
@@ -73,14 +70,6 @@ void app_main()
   /* mesh start */
   ESP_ERROR_CHECK(esp_mesh_start());
   ESP_LOGI(MESH_TAG, "mesh starts successfully, heap:%d, %s\n",  esp_get_free_heap_size(), esp_mesh_is_root_fixed() ? "root fixed" : "root not fixed");
-
-  /* mesh user variables */
-  base_addr.addr[0] = 0xcc;
-  base_addr.addr[1] = 0xcc;
-  base_addr.addr[2] = 0xcc;
-  base_addr.addr[3] = 0xcc;
-  base_addr.addr[4] = 0xcc;
-  base_addr.addr[5] = 0xcc;
 
   /* arduino init & start */
   initArduino();

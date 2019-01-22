@@ -11,6 +11,8 @@
 #include "config.h"
 
 // mesh
+const char *MESH_TAG = "room_mesh";
+const uint8_t MESH_ID[6] = { 0x77, 0x77, 0x77, 0x77, 0x77, 0x77}; // mesh ID should be same among peers
 #define RX_BUF_SIZE (512)
 #define TX_BUF_SIZE (512)
 static uint8_t rx_buf[RX_BUF_SIZE] = { 0, };
@@ -27,10 +29,13 @@ char voca[10][256] = {0, };
 #define LED_BUILTIN 13
 #endif
 #if (ID == ID_MOTION_SENSOR)
+const uint8_t my_mac[6] = {0x24, 0x0a, 0xc4, 0x0f, 0x8d, 0xb4};
 #include "arduino_apps/motion.cpp"
 #elif (ID == ID_RELAY_CTRL)
+const uint8_t my_mac[6] = {0x24, 0x0a, 0xc4, 0x10, 0x50, 0x98};
 #include "arduino_apps/relay.cpp"
 #elif (ID == ID_POINTER_CTRL)
+const uint8_t my_mac[6] = {0x24, 0x0a, 0xc4, 0x0e, 0x8b, 0x10};
 #include "arduino_apps/pointer.cpp"
 #endif
 
@@ -64,9 +69,13 @@ void esp_mesh_p2p_tx_main(void *arg)
   int idx = 0;
 
   //
+  mesh_addr_t route_table[CONFIG_MESH_ROUTE_TABLE_SIZE];
+  int route_table_size = 0;
+
+  //
   mesh_data_t data;
   data.data = tx_buf;
-  data.size = 128; //sizeof(tx_buf);
+  data.size = sizeof(tx_buf);
   data.proto = MESH_PROTO_BIN;
   // data.tos = MESH_TOS_DEF;
 
@@ -77,22 +86,23 @@ void esp_mesh_p2p_tx_main(void *arg)
     //loop counter
     count++;
 
+    //get peer list
+    esp_mesh_get_routing_table((mesh_addr_t *) &route_table, CONFIG_MESH_ROUTE_TABLE_SIZE * 6, &route_table_size);
+
     //fill the content
     idx = count % 5;
     memcpy(tx_buf, (uint8_t *)voca[idx], 256);
 
-    //send to all == broadcast (except the sender)
-    for (int i = 1; i <= 3; i++) {
-      if (i == ID) continue;
-      base_addr.addr[5] = i;
-      esp_err_t err = esp_mesh_send(&base_addr, &data, MESH_DATA_P2P, NULL, 0);
+    //send to all == broadcast (including the sender)
+    for (int i = 0; i < route_table_size; i++) {
+      esp_err_t err = esp_mesh_send(&route_table[i], &data, MESH_DATA_P2P, NULL, 0);
       ESP_LOGI(MESH_TAG, "SENT-TO:%x:%x:%x:%x:%x:%x",
-               base_addr.addr[0],
-               base_addr.addr[1],
-               base_addr.addr[2],
-               base_addr.addr[3],
-               base_addr.addr[4],
-               base_addr.addr[5]);
+               route_table[i].addr[0],
+               route_table[i].addr[1],
+               route_table[i].addr[2],
+               route_table[i].addr[3],
+               route_table[i].addr[4],
+               route_table[i].addr[5]);
       if (err) {
         ESP_LOGE(MESH_TAG, "WHAT?");
       }
@@ -125,6 +135,20 @@ void esp_mesh_p2p_rx_main(void *arg)
       ESP_LOGE(MESH_TAG, "err:0x%x, size:%d", err, data.size);
       continue;
     }
+    ESP_LOGI(MESH_TAG, "STA:%x:%x:%x:%x:%x:%x",
+             my_mac_sta[0],
+             my_mac_sta[1],
+             my_mac_sta[2],
+             my_mac_sta[3],
+             my_mac_sta[4],
+             my_mac_sta[5]);
+    // ESP_LOGI(MESH_TAG, "AP:%x:%x:%x:%x:%x:%x",
+    //          my_mac_ap[0],
+    //          my_mac_ap[1],
+    //          my_mac_ap[2],
+    //          my_mac_ap[3],
+    //          my_mac_ap[4],
+    //          my_mac_ap[5]);
     //from.addr is equal to the sender's STA mac addr. (not AP addr..)
     //but this might differs if parent-child relationship opposite way?
     //so, this means that receiver was actually AP and the sender was STA.. so STA mac. ?
@@ -135,7 +159,7 @@ void esp_mesh_p2p_rx_main(void *arg)
     ESP_LOGI(MESH_TAG, "RX:%x:%x:%x:%x:%x:%x, %s", from.addr[0], from.addr[1], from.addr[2], from.addr[3], from.addr[4], from.addr[5], data.data);
 
     //delay 10 ms
-    vTaskDelay(100 / portTICK_RATE_MS);
+    vTaskDelay(10 / portTICK_RATE_MS);
   }
 
   //
