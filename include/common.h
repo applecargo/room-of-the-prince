@@ -12,7 +12,7 @@ extern painlessMesh mesh;
 #define ID_RELAY_CTRLER  (0x1D00 + 2)
 #define ID_POINT_MOTOR   (0x1D00 + 3)
 //(choice)
-#define IDENTITY ID_MOTION_SENSOR
+#define IDENTITY ID_POINT_MOTOR
 
 // board
 #define BOARD_NODEMCU_ESP12E (0xBD00 + 1)
@@ -38,7 +38,9 @@ extern painlessMesh mesh;
 //     1 - slow blinking (syncronized)
 //
 #if (BOARD_SELECT==BOARD_NODEMCU_ESP12E)
-#define LED_PIN 2 // built-in LED
+#define LED_PIN 2 // nodemcuv2
+#elif (BOARD_SELECT==BOARD_NODEMCU_ESP32)
+#define LED_PIN 13 // featheresp32
 #endif
 #define LED_PERIOD (1000+(12*1000/128))
 #define LED_ONTIME (12*1000/128)

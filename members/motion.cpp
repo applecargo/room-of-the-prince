@@ -22,5 +22,4 @@ Task saying_greeting(1000, TASK_FOREVER, &greeting);
 void setup_member() {
   runner.addTask(saying_greeting);
   saying_greeting.enable();
-  Serial.println("task enabled.");
 }

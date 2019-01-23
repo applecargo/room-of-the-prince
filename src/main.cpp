@@ -57,14 +57,10 @@ void taskStatusBlink_fastblink() {
 
 // mesh callbacks
 void receivedCallback(uint32_t from, String & msg) { // REQUIRED
-  // let the device know.
+  // let the member device know.
   gotMessageCallback(from, msg);
 }
 void changedConnectionCallback() {
-  // Serial.println("changed connection");
-  // Serial.print("mesh.getNodeList().size():");
-  // Serial.println(mesh.getNodeList().size());
-
   // check status -> modify status LED
   if (mesh.getNodeList().size() > 0) {
     // (still) connected.
@@ -77,9 +73,8 @@ void changedConnectionCallback() {
     // disconnected!!
     statusblinks.set(0, 1, &taskStatusBlink_steadyOn);
     statusblinks.enable();
-    // Serial.println("disconnected!");
   }
-  // let the device know.
+  // let the member device know.
   gotChangedConnectionCallback();
 }
 void newConnectionCallback(uint32_t nodeId) {
