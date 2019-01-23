@@ -1,5 +1,12 @@
 #pragma once
 
+//
+#include <Arduino.h>
+
+//
+#include <painlessMesh.h>
+extern painlessMesh mesh;
+
 // member identity
 #define ID_MOTION_SENSOR (0x1D00 + 1)
 #define ID_RELAY_CTRLER  (0x1D00 + 2)
@@ -37,4 +44,8 @@
 #define LED_ONTIME (12*1000/128)
 
 // event handlers fo connection-related events
-void gotMessageCallback(uint32_t from, String & msg);
+extern void gotMessageCallback(uint32_t from, String & msg); // REQUIRED
+extern void gotChangedConnectionCallback();
+
+// the system scheduler
+extern Scheduler runner;

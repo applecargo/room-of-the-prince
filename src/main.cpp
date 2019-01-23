@@ -1,10 +1,23 @@
-#include <Arduino.h>
+//
+// Exhibition @ exhibition-space
+//   <one and twelve one-hundred-eighth seconds at the prince's room>
+//
+// Feb. 11 @ 2019
+//
 
-// common sense
+// the common sense
 #include "common.h"
 
+// the members lounge
+#if (IDENTITY == ID_MOTION_SENSOR)
+#include "../members/motion.cpp"
+#elif (IDENTITY == ID_RELAY_CTRLER)
+#include "../members/relay.cpp"
+#elif (IDENTITY == ID_POINT_MOTOR)
+#include "../members/pointer.cpp"
+#endif
+
 // painless mesh
-#include <painlessMesh.h>
 painlessMesh mesh;
 
 //scheduler
@@ -58,7 +71,7 @@ void changedConnectionCallback() {
     onFlag = false; //reset flag stat.
     statusblinks.set(LED_PERIOD, 2, &taskStatusBlink_slowblink_insync);
     statusblinks.enable();
-    // Serial.println("connected!");
+    Serial.println("connected!");
   }
   else {
     // disconnected!!
@@ -67,18 +80,20 @@ void changedConnectionCallback() {
     // Serial.println("disconnected!");
   }
   // let the device know.
-  changedSeatCallback();
+  gotChangedConnectionCallback();
 }
 void newConnectionCallback(uint32_t nodeId) {
   changedConnectionCallback();
 }
 
+void setup_member();
 void setup() {
   //led
   pinMode(LED_PIN, OUTPUT);
 
   //mesh
-  mesh.setDebugMsgTypes(ERROR | DEBUG | CONNECTION);
+  // mesh.setDebugMsgTypes(ERROR | DEBUG | CONNECTION);
+  mesh.setDebugMsgTypes( ERROR | STARTUP );
   mesh.init(MESH_SSID, MESH_PASSWORD, &runner, MESH_PORT, WIFI_AP_STA, MESH_CHANNEL);
 #ifdef MESH_ANCHOR
   mesh.setContainsRoot(true);
@@ -94,6 +109,10 @@ void setup() {
 
   //serial
   Serial.begin(9600);
+  Serial.println("setup done.");
+
+  //setup_member
+  setup_member();
 }
 
 void loop() {
