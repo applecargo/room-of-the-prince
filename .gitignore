@@ -31,5 +31,10 @@
 *.out
 *.app
 
-#
-build/*
+# esp-idf / CMake
+# build/*
+
+# platformio
+.pioenvs/*
+.piolibdeps/*
+.travis.yml
