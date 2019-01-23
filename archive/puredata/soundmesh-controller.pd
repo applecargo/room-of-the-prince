@@ -1,0 +1,26 @@
+#N canvas 523 106 319 424 10;
+#X obj 77 357 arduino;
+#X msg 117 299 close;
+#X msg 117 270 devices;
+#X msg 77 241 analog 10 \$1;
+#X obj 77 212 / 255;
+#X floatatom 77 184 5 0 0 1 song_number - -, f 5;
+#X msg 117 328 devicename /dev/ttyACM0;
+#X obj 37 163 bng 15 250 50 0 empty empty stop 17 7 0 10 -258113 -1
+-1;
+#X msg 37 183 0;
+#X text 33 14 remote control of sound-mesh w/ firmata;
+#X text 33 34 relavant arduino sketch:;
+#X text 33 54 soundmesh/gateway/tftlcd_touch_uno/;
+#X text 33 74 send msg. to analog 10;
+#X text 33 94 0 : stop.;
+#X text 33 114 any number (~ 255) : will play the song;
+#X text 187 306 SET THIS FIRST!;
+#X connect 1 0 0 0;
+#X connect 2 0 0 0;
+#X connect 3 0 0 0;
+#X connect 4 0 3 0;
+#X connect 5 0 4 0;
+#X connect 6 0 0 0;
+#X connect 7 0 8 0;
+#X connect 8 0 4 0;

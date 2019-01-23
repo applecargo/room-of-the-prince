@@ -1,5 +1,3 @@
-#include <Arduino.h>
-
 /*
  * freenode devices to the mesh (part1)
  *
@@ -103,11 +101,6 @@ Scheduler runner;
 #define LED_PERIOD 1000
 #define LED_ONTIME 100
 bool onFlag = false;
-//prototypes
-void taskStatusBlink_steadyOn();
-void taskStatusBlink_slowblink_insync();
-void taskStatusBlink_fastblink();
-//the task
 Task statusblinks(0, 1, &taskStatusBlink_steadyOn); // at start, steady on. default == disabled. ==> setup() will enable.
 // when disconnected, steadyon.
 void taskStatusBlink_steadyOn() {
