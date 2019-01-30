@@ -8,11 +8,15 @@
 extern painlessMesh mesh;
 
 // member identity
-#define ID_MOTION_SENSOR (0x1D00 + 1)
-#define ID_RELAY_CTRLER  (0x1D00 + 2)
-#define ID_POINT_MOTOR   (0x1D00 + 3)
+#define ID_CONDUCTOR     (0x1D00 + 0x00)
+#define ID_MOTION_SENSOR (0x1D00 + 0x10)
+#define ID_RELAY_CTRLER  (0x1D00 + 0x20)
+#define ID_POINT_MOTOR   (0x1D00 + 0x30)
+#define ID_LOOK_AT       (0x1D00 + 0x40)
+//
+#define ID_EVERYONE      (0x1F00 + 0x00)
 //(choice)
-#define IDENTITY ID_POINT_MOTOR
+#define IDENTITY ID_MOTION_SENSOR
 
 // board
 #define BOARD_NODEMCU_ESP12E (0xBD00 + 1)
@@ -51,3 +55,5 @@ extern void gotChangedConnectionCallback();
 
 // the system scheduler
 extern Scheduler runner;
+
+#include "words.h"

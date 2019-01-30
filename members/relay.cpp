@@ -2,6 +2,16 @@
 void gotMessageCallback(uint32_t from, String & msg) { // REQUIRED
   // Serial.println("RX:" + msg);
   Serial.println(msg);
+  if (msg.charAt(0) == '[') {
+    if (msg.substring(1, 3) == "M1") {
+      Serial.println("M1 happened!");
+      digitalWrite(D1, HIGH);
+    }
+    else if (msg.substring(1, 3) == "M0") {
+      Serial.println("M0 happened!");
+      digitalWrite(D1, LOW);
+    }
+  }
 }
 void gotChangedConnectionCallback() { // REQUIRED
   ;
@@ -22,4 +32,6 @@ Task saying_greeting(1000, TASK_FOREVER, &greeting);
 void setup_member() {
   runner.addTask(saying_greeting);
   saying_greeting.enable();
+  //
+  pinMode(D1, OUTPUT);
 }

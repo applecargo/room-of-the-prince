@@ -9,12 +9,21 @@
 #include "common.h"
 
 // the members lounge
-#if (IDENTITY == ID_MOTION_SENSOR)
+#if (IDENTITY == ID_CONDUCTOR)
+#include "../members/conductor.cpp"
+//
+#elif (IDENTITY == ID_MOTION_SENSOR)
 #include "../members/motion.cpp"
+//
 #elif (IDENTITY == ID_RELAY_CTRLER)
 #include "../members/relay.cpp"
+//
 #elif (IDENTITY == ID_POINT_MOTOR)
 #include "../members/pointer.cpp"
+//
+#elif (IDENTITY == ID_LOOK_AT)
+#include "../members/lookat.cpp"
+//
 #endif
 
 // painless mesh
@@ -87,8 +96,8 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
 
   //mesh
-  // mesh.setDebugMsgTypes(ERROR | DEBUG | CONNECTION);
-  mesh.setDebugMsgTypes( ERROR | STARTUP );
+  mesh.setDebugMsgTypes(ERROR | DEBUG | CONNECTION);
+  // mesh.setDebugMsgTypes( ERROR | STARTUP );
   mesh.init(MESH_SSID, MESH_PASSWORD, &runner, MESH_PORT, WIFI_AP_STA, MESH_CHANNEL);
 #ifdef MESH_ANCHOR
   mesh.setContainsRoot(true);
