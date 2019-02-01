@@ -24,6 +24,9 @@
 #elif (IDENTITY == ID_LOOK_AT)
 #include "../members/lookat.cpp"
 //
+#elif (IDENTITY == ID_THUNDER)
+#include "../members/thunder.cpp"
+//
 #endif
 
 // painless mesh
@@ -96,9 +99,20 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
 
   //mesh
+  WiFiMode_t node_type = WIFI_AP_STA;
+#if (NODE_TYPE == NODE_TYPE_STA_ONLY)
+  system_phy_set_max_tpw(0);
+  node_type = WIFI_STA;
+#endif
   mesh.setDebugMsgTypes(ERROR | DEBUG | CONNECTION);
   // mesh.setDebugMsgTypes( ERROR | STARTUP );
-  mesh.init(MESH_SSID, MESH_PASSWORD, &runner, MESH_PORT, WIFI_AP_STA, MESH_CHANNEL);
+  mesh.init(MESH_SSID, MESH_PASSWORD, &runner, MESH_PORT, node_type, MESH_CHANNEL);
+
+  //
+  // void init(String ssid, String password, Scheduler *baseScheduler, uint16_t port = 5555, WiFiMode_t connectMode = WIFI_AP_STA, uint8_t channel = 1, uint8_t hidden = 0, uint8_t maxconn = MAX_CONN);
+  // void init(String ssid, String password, uint16_t port = 5555, WiFiMode_t connectMode = WIFI_AP_STA, uint8_t channel = 1, uint8_t hidden = 0, uint8_t maxconn = MAX_CONN);
+  //
+
 #ifdef MESH_ANCHOR
   mesh.setContainsRoot(true);
 #endif
@@ -113,7 +127,13 @@ void setup() {
 
   //serial
   Serial.begin(9600);
+  delay(100);
   Serial.println("setup done.");
+  Serial.print("IDENTITY: ");
+  Serial.println(IDENTITY, HEX);
+#if (NODE_TYPE == NODE_TYPE_STA_ONLY)
+  Serial.println("INFO: we are in the WIFI_STA mode!");
+#endif
 
   //setup_member
   setup_member();

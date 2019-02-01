@@ -1,134 +1,90 @@
+// servo
 #include <Servo.h>
-
-//
-extern Task lookat_task;
-extern Task lookat_msg_task;
-
-//
 static Servo myservo;
 
-//
-static int content = 0;
+// my tasks
+extern Task lookat_task;
+extern Task saying_greeting;
 
 // room protocol
+static int message = 0;
+static char msg_cstr[MSG_LENGTH_MAX] = {0, };
+extern Task reaction_task;
+void gotChangedConnectionCallback() { // REQUIRED
+}
 void gotMessageCallback(uint32_t from, String & msg) { // REQUIRED
-  // Serial.println("RX:" + msg);
-  Serial.println(msg);
-
+  // Serial.println(msg);
   // is it for me?
-  // Serial.print("receipent:");
   int receipent = msg.substring(1, 7).toInt();
-  // Serial.println(receipent);
-
-  if (receipent == ID_LOOK_AT) {
-
+  if (receipent == IDENTITY) {
     // what it says?
-    // Serial.print("content:");
-    content = msg.substring(8, 12).toInt();
-    // Serial.println(content);
-
-    switch (content)
+    message = msg.substring(8, 12).toInt();
+    // i ve heard. reaction.
+    reaction_task.restart();
+    // so, what to do, then?
+    switch (message)
     {
     case LOOKAT_WORD_LOOK_AROUND:
       Serial.println("lookat: me to looking around?? well, but where?");
-      lookat_msg_task.restart();
       lookat_task.restart();
       break;
     default:
       ;
     }
-
   }
 }
-void gotChangedConnectionCallback() { // REQUIRED
-  ;
-}
 
-// task #1 : my stuff
-// let's blindly say hello to everyone.
+// some reaction for received msg.
+void reaction() {
+  static int mask = 0x8000;
+  static int count = 0;
+  if (reaction_task.isFirstIteration()) {
+    mask = 0x8000;
+    count = 0;
+  }
+  if ((message & mask) == 0) {
+    tone(D7, 1500 + count * 50);
+  }
+  else {
+    noTone(D7);
+  }
+  mask = mask >> 1;
+  count++;
+}
+Task reaction_task(10, 16, &reaction);
+
+// saying hello
 void greeting() {
-  static String greeting = "Hello? I will look at you!";
+  static String greeting = "Me? I do look at you!";
   String greeting_r = greeting.substring(0, random(1, greeting.length()));
-  // Serial.println("TX:" + greeting_r);
   mesh.sendBroadcast(greeting_r);
 }
 Task saying_greeting(1000, TASK_FOREVER, &greeting);
-
-// look_at. express received msg.
-static int mask = 0x8000; // 16bit mask --> iteration of 16 times.
-static int tgl_cnt = 0; // 16bit mask --> iteration of 16 times.
-
-// by relay toggling
-
-// void relayToggler() {
-//   if (lookat_msg_task.isFirstIteration()) {
-//     mask = 0x8000;
-//   }
-//   // Serial.print("bit-seq: ");
-//   // Serial.println((content & mask) == 0);
-//   if ((content & mask) == 0) {
-//     //relay ON.
-//     digitalWrite(D7, HIGH);
-//   }
-//   else {
-//     //relay OFF.
-//     digitalWrite(D7, LOW);
-//   }
-//   //
-//   mask = mask >> 1;
-// }
-// //the task
-// Task lookat_msg_task(10, 16, &relayToggler);
-
-// by buzzer messaging
-
-void buzzerMessage() {
-  if (lookat_msg_task.isFirstIteration()) {
-    mask = 0x8000;
-    tgl_cnt = 0;
-  }
-  // Serial.print("bit-seq: ");
-  // Serial.println((content & mask) == 0);
-  if ((content & mask) == 0) {
-    //buzzer ON.
-    tone(D7, 1500 + tgl_cnt * 50);
-    // tone(D7, 300 + (int)(tgl_cnt * random(50)));
-    // tone(D7, 3000 + (int)random(1000));
-  }
-  else {
-    //relay OFF.
-    noTone(D7);
-  }
-  //
-  mask = mask >> 1;
-  tgl_cnt++;
-}
-//the task
-Task lookat_msg_task(10, 16, &buzzerMessage);
 
 // looking around once.
 void lookat() {
   int angle = random(0, 180);
   //
   Serial.print("i will look at now @ ");
-  Serial.println(angle);
+  Serial.print(angle);
+  Serial.println(" deg.");
   //
   myservo.write(angle);
 }
-//the task
 Task lookat_task(0, TASK_ONCE, &lookat);
 
 //setup_member
 void setup_member() {
-  //
+
+  //servo
   myservo.attach(D6);
-  //
+
+  //tone
   pinMode(D7, OUTPUT);
-  // digitalWrite(D7, HIGH);
-  //
+
+  //tasks
   runner.addTask(saying_greeting);
   saying_greeting.enable();
-  //
   runner.addTask(lookat_task);
-  runner.addTask(lookat_msg_task);
+  runner.addTask(reaction_task);
 }

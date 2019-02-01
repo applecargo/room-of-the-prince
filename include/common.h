@@ -6,6 +6,9 @@
 //
 #include <painlessMesh.h>
 extern painlessMesh mesh;
+#define NODE_TYPE_AP_STA    (0x40DE0001)
+#define NODE_TYPE_STA_ONLY  (0x40DE0002)
+#define NODE_TYPE           NODE_TYPE_AP_STA
 
 // member identity
 #define ID_CONDUCTOR     (0x1D00 + 0x00)
@@ -13,10 +16,17 @@ extern painlessMesh mesh;
 #define ID_RELAY_CTRLER  (0x1D00 + 0x20)
 #define ID_POINT_MOTOR   (0x1D00 + 0x30)
 #define ID_LOOK_AT       (0x1D00 + 0x40)
+#define ID_THUNDER       (0x1D00 + 0x50)
 //
 #define ID_EVERYONE      (0x1F00 + 0x00)
 //(choice)
-#define IDENTITY ID_MOTION_SENSOR
+#define IDENTITY         ID_THUNDER
+
+//NOTE: disabling AP beacon for speaker accompanied devices!
+#if (IDENTITY == ID_THUNDER)
+#undef NODE_TYPE
+#define NODE_TYPE        NODE_TYPE_STA_ONLY
+#endif
 
 // board
 #define BOARD_NODEMCU_ESP12E (0xBD00 + 1)
@@ -41,9 +51,9 @@ extern painlessMesh mesh;
 //     0 - steady on
 //     1 - slow blinking (syncronized)
 //
-#if (BOARD_SELECT==BOARD_NODEMCU_ESP12E)
+#if (BOARD_SELECT == BOARD_NODEMCU_ESP12E)
 #define LED_PIN 2 // nodemcuv2
-#elif (BOARD_SELECT==BOARD_NODEMCU_ESP32)
+#elif (BOARD_SELECT == BOARD_NODEMCU_ESP32)
 #define LED_PIN 13 // featheresp32
 #endif
 #define LED_PERIOD (1000+(12*1000/128))
