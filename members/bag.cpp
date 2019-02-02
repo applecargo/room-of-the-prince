@@ -5,8 +5,10 @@
 // servo
 #include <Servo.h>
 static Servo myservo;
-#define HANDLE_UP_TARGET 20
-#define HANDLE_DOWN_TARGET 45
+//#define HANDLE_UP_TARGET 45 // MIN
+#define HANDLE_UP_TARGET 50 // for 90 deg.
+//#define HANDLE_DOWN_TARGET 151 // MAX
+#define HANDLE_DOWN_TARGET 152 // for firm close
 
 // my tasks
 extern Task handle_up_task;
@@ -129,4 +131,7 @@ void setup_member() {
   runner.addTask(handle_down_task);
   runner.addTask(sing_task);
   runner.addTask(reaction_task);
+
+  //
+  handle_down_task.restartDelayed(500);
 }
