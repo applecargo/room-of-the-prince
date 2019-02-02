@@ -37,4 +37,6 @@
 # platformio
 .pioenvs/*
 .piolibdeps/*
+members/*/.pioenvs/*
+members/*/.piolibdeps/*
 .travis.yml

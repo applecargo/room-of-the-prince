@@ -19,7 +19,7 @@ extern Task reaction_task;
 void gotChangedConnectionCallback() { // REQUIRED
 }
 void gotMessageCallback(uint32_t from, String & msg) { // REQUIRED
-  // Serial.println(msg);
+  Serial.println(msg);
 }
 
 // some reaction for received msg.
@@ -45,7 +45,10 @@ void button() {
     Serial.println("oh! the button triggers!");
     // compose the message and send!
     //sprintf(msg_cstr, "[%06d:%03d] To lookat: look around now!", ID_LOOK_AT, LOOKAT_WORD_LOOK_AROUND);
-    sprintf(msg_cstr, "[%06d:%03d] To thunder: go rrrrrrrrr now!", ID_THUNDER, THUNDER_WORD_RRRRR);
+    //sprintf(msg_cstr, "[%06d:%03d] To thunder: go rrrrrrrrr now!", ID_THUNDER, THUNDER_WORD_RRRRR);
+    sprintf(msg_cstr, "[%06d:%03d] To bag: handle up now!", ID_BAG, BAG_WORD_HANDLE_UP);
+    // sprintf(msg_cstr, "[%06d:%03d] To bag: handle down now!", ID_BAG, BAG_WORD_HANDLE_DOWN);
+    // sprintf(msg_cstr, "[%06d:%03d] To bag: sing now!", ID_BAG, BAG_WORD_SING);
     msg = String(msg_cstr);
     mesh.sendBroadcast(msg);
     // also show to the display

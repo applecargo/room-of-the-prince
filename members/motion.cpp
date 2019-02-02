@@ -71,11 +71,15 @@ void motion() {
       msg = String(msg_cstr);
       mesh.sendBroadcast(msg);
       //
+      sprintf(msg_cstr, "[%06d:%03d] To rocking: rocking? also?", ID_ROCKING, ROCKING_WORD_ROCK_ROCK_ROCK);
+      msg = String(msg_cstr);
+      mesh.sendBroadcast(msg);
+      //
       message = MOTION_WORD_MOTION_START;
       reaction_task.restart();
     } else {
       // Serial.println("motion stop.");
-      sprintf(msg_cstr, "[%06d:%03d] To everyone: Uhm, my world is tran·quilo.", ID_EVERYONE, MOTION_WORD_MOTION_START);
+      sprintf(msg_cstr, "[%06d:%03d] To everyone: Uhm, my world is tran·quilo.", ID_EVERYONE, MOTION_WORD_MOTION_END);
       msg = String(msg_cstr);
       mesh.sendBroadcast(msg);
       //

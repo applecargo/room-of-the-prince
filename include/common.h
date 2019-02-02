@@ -1,15 +1,5 @@
 #pragma once
 
-//
-#include <Arduino.h>
-
-//
-#include <painlessMesh.h>
-extern painlessMesh mesh;
-#define NODE_TYPE_AP_STA    (0x40DE0001)
-#define NODE_TYPE_STA_ONLY  (0x40DE0002)
-#define NODE_TYPE           NODE_TYPE_AP_STA
-
 // member identity
 #define ID_CONDUCTOR     (0x1D00 + 0x00)
 #define ID_MOTION_SENSOR (0x1D00 + 0x10)
@@ -17,15 +7,29 @@ extern painlessMesh mesh;
 #define ID_POINT_MOTOR   (0x1D00 + 0x30)
 #define ID_LOOK_AT       (0x1D00 + 0x40)
 #define ID_THUNDER       (0x1D00 + 0x50)
+#define ID_ROCKING       (0x1D00 + 0x60)
+#define ID_BAG           (0x1D00 + 0x70)
+#define ID_DISTANCE      (0x1D00 + 0x80)
+#define ID_HARMONICA     (0x1D00 + 0x90)
 //
 #define ID_EVERYONE      (0x1F00 + 0x00)
 //(choice)
-#define IDENTITY         ID_THUNDER
+#define IDENTITY         ID_HARMONICA
+
+//
+#include <Arduino.h>
+
+//
+#include <painlessMesh.h>
+extern painlessMesh mesh;
 
 //NOTE: disabling AP beacon for speaker accompanied devices!
+#define NODE_TYPE_AP_STA    (0x40DE0001)
+#define NODE_TYPE_STA_ONLY  (0x40DE0002)
+#define NODE_TYPE           NODE_TYPE_AP_STA
 #if (IDENTITY == ID_THUNDER)
 #undef NODE_TYPE
-#define NODE_TYPE        NODE_TYPE_STA_ONLY
+#define NODE_TYPE           NODE_TYPE_STA_ONLY
 #endif
 
 // board

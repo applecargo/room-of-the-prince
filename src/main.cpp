@@ -27,6 +27,18 @@
 #elif (IDENTITY == ID_THUNDER)
 #include "../members/thunder.cpp"
 //
+#elif (IDENTITY == ID_ROCKING)
+#include "../members/rocking.cpp"
+//
+#elif (IDENTITY == ID_DISTANCE)
+#include "../members/distance.cpp"
+//
+#elif (IDENTITY == ID_BAG)
+#include "../members/bag.cpp"
+//
+#elif (IDENTITY == ID_HARMONICA)
+#include "../members/harmonica.cpp"
+//
 #endif
 
 // painless mesh
