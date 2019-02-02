@@ -35,6 +35,8 @@
 # build/*
 
 # platformio
+.DS_Store
+*/.DS_Store
 .pioenvs/*
 .piolibdeps/*
 members/*/.pioenvs/*
