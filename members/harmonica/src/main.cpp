@@ -32,14 +32,14 @@ static int notes[SCORE_COUNT][SCORE_NOTE_MAX][2] = { //unit: (steps, millisec)
 
   //score #1
   {
-    {  1000,  2000},
-    {  3000,  2000},
-    {  1000,  3000},
-    { 10000,   100},
-    {  3000,  2000},
-    { 10000,  2500},
-    {  1000,  1000},
-    {   100,   400}
+    {  1000,  2000}, // ( ( 1000 / 4096 ) / 2.000 ) * 60 = 7.32
+    {  3000,  2000}, // ( ( 2000 / 4096 ) / 2.000 ) * 60 = 14.65
+    {  1000,  3000}, // ( ( 2000 / 4096 ) / 3.000 ) * 60 = 9.77
+    { 10000,   100}, // ( ( 9000 / 4096 ) /  .100 ) * 60 = 1332.42 * / ??
+    {  3000,  2000}, // ( ( 7000 / 4096 ) / 2.000 ) * 60 = 8.73 / ?
+    { 10000,  2500}, // ( ( 7000 / 4096 ) / 2.500 ) * 60 = 41.02 *
+    {  1000,  1000}, // ( ( 9000 / 4096 ) / 1.000 ) * 60 = 13.24 / ?
+    {   100,   400}  // ( ( 900  / 4096 ) /  .400 ) * 60 = 32.96 *
   },
 
   // score #2
@@ -79,6 +79,14 @@ void music_player_stepping() {
     } else {
       Serial.println("okay. i go now.");
     }
+
+    //DEBUG
+    Serial.print(" --> dur : "); Serial.println(dur);
+    Serial.print(" --> cur_step : "); Serial.println(cur_step);
+    Serial.print(" --> target_step : "); Serial.println(target_step);
+    Serial.print(" --> steps : "); Serial.println(steps);
+    Serial.print(" --> STEPS_PER_MILLISEC_TO_RPM : "); Serial.println(STEPS_PER_MILLISEC_TO_RPM);
+
     //
     Serial.print(" --> speed(rpm) : "); Serial.println(rpm);
     //
@@ -102,7 +110,7 @@ void music_player_stepping() {
     // reschedule myself..
     music_player_stepping_task.restartDelayed(100);
     //
-    Serial.println("stepper BUSY! will wait a bit.");
+    // Serial.println("stepper BUSY! will wait a bit.");
   }
 }
 Task music_player_stepping_task(0, TASK_ONCE, music_player_stepping);
