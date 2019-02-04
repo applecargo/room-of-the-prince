@@ -28,13 +28,31 @@ static int score_now = 0;
 #define SCORE_COUNT 2
 //score #1
 static int note_idx = 0;
-static int note_steps[SCORE_COUNT][SCORE_NOTE_MAX] = { //unit: steps
-  {  1000,  2000,  3000,  2000,  1000,  3000, 10000,     1},  // score #1
-  {  3000,  2000, 10000,  2500,  1000,  1000,   100,   400}   // score #2
-};
-static int note_dur[SCORE_COUNT][SCORE_NOTE_MAX] = { // unit: msec
-  {   100,   100,   100,   100,   100,   100,     0,     0},  // score #1
-  {   100,   100,   100,   100,   100,   100,     0,     0}   // score #2
+static int notes[SCORE_COUNT][SCORE_NOTE_MAX][2] = { //unit: (steps, millisec)
+
+  //score #1
+  {
+    {  1000,  2000},
+    {  3000,  2000},
+    {  1000,  3000},
+    { 10000,   100},
+    {  3000,  2000},
+    { 10000,  2500},
+    {  1000,  1000},
+    {   100,   400}
+  },
+
+  // score #2
+  {
+    {  1000,  2000},
+    {  3000,  2000},
+    {  1000,  3000},
+    { 10000,   100},
+    {  3000,  2000},
+    { 10000,  2500},
+    {  1000,  1000},
+    {   100,   400}
+  }
 };
 
 //task
@@ -51,8 +69,8 @@ void music_player_stepping() {
     digitalWrite(RELAY_PIN, HIGH); // blow start! (and continue.)
     //
     float cur_step = stepper.getStep();
-    float target_step = note_steps[score_now][note_idx];
-    float dur = note_dur[score_now][note_idx];
+    float target_step = notes[score_now][note_idx][0];
+    float dur = note_dur[score_now][note_idx][1];
     float steps = target_step - cur_step;
     float rpm = fabs(steps / dur * STEPS_PER_MILLISEC_TO_RPM); // unit conv.: (steps/msec) --> (rpm)
     //
@@ -134,8 +152,8 @@ void receiveEvent(int numBytes) {
       String str_score = msg.substring(2,4); // 23
       unsigned int score_cmd = str_score.toInt();
       //score #0 reserved as a RANDOM play.
-      //  --> so, e.g. score #1 == note_steps[0][]
-      //  --> so, e.g. score #2 == note_steps[1][]
+      //  --> so, e.g. score #1 == notes[0][][]
+      //  --> so, e.g. score #2 == notes[1][][]
       if (score_cmd > 0) {
         score_now = score_cmd - 1;
         if (score_now < SCORE_COUNT) {
