@@ -1,10 +1,9 @@
 // i2c
 #include <Wire.h>
-#include "harmonica/metrics.h"
 #include "harmonica/i2c_protocol.h"
 
 // my tasks
-extern Task step_writer_task;
+extern Task play_music_task;
 extern Task saying_greeting;
 
 // room protocol
@@ -26,7 +25,10 @@ void gotMessageCallback(uint32_t from, String & msg) { // REQUIRED
     switch (message)
     {
     case HARMONICA_WORD_PLAY_START:
-      step_writer_task.restart();
+      play_music_task.restart();
+      break;
+    case HARMONICA_WORD_PLAY_STOP:
+      play_music_task.restart();
       break;
     default:
       ;
@@ -61,72 +63,35 @@ void greeting() {
 }
 Task saying_greeting(1000, TASK_FOREVER, &greeting);
 
-// step writer
-// static int step_seq_pos[64] = {1, };   // unit: steps
-// static int step_seq_dur[64] = {100, }; // unit: msec
-static int step_seq_pos[64] = { \
-  100, 200, 300, 200, 100, 300, 1000, 1, };   // unit: steps
-static int step_seq_dur[64] = { \
-  100, 100, 100, 100, 100, 100, 100, 100, \
-  100, 100, 100, 100, 100, 100, 100, 100, \
-  100, 100, 100, 100, 100, 100, 100, 100, \
-  100, 100, 100, 100, 100, 100, 100, 100, \
-  100, 100, 100, 100, 100, 100, 100, 100, \
-  100, 100, 100, 100, 100, 100, 100, 100, \
-  100, 100, 100, 100, 100, 100, 100, 100, \
-  100, 100, 100, 100, 100, 100, 100, 100}; // unit: msec
-void step_writer() {
-  static int count = 0;
-  static int step_pos_prev = 0;
-  static char cstr[256] = {0, };
-  if (count < 64) {
-    //
-    // sanity check (speed)
-    //
-    float steps_to_move = step_seq_pos[count] - step_pos_prev;
-    float moving_speed = steps_to_move / step_seq_dur[count]; // unit: (steps/msec)
-    if (steps_to_move != 0) {
-      if (fabs(moving_speed) > STEPS_PER_MILLISEC_MAX) {
-        //oh.. that might be TOO fast, isn't it??
-        Serial.println("oh.. isn't it TOO FAST??");
-      } else {
-        //my next move will be this fast.. and i can do that.
-        Serial.println("okay. i go now.");
-      }
-    }
+// play music
+void play_music() {
 
-    //DEBUG
-    Serial.println("[SEQ]");
-    Serial.print  ("  count: "); Serial.println(count);
-    Serial.print  ("  step_seq_pos: "); Serial.println(step_seq_pos[count]);
-    Serial.print  ("  step_pos_prev: "); Serial.println(step_pos_prev);
-    Serial.print  ("  steps_to_move: "); Serial.println(steps_to_move);
-    Serial.print  ("  moving_spd: "); Serial.print(moving_speed); Serial.println(" (steps/msec)");
-    Serial.print  ("  max_spd: "); Serial.print(STEPS_PER_MILLISEC_MAX); Serial.println(" (steps/msec)");
-
-    //
-    // "PppppDdddd"
-    //   'P' - target position (steps)
-    //   'D' - movement duration (msec)
-    //
-
-    //
-    sprintf(cmdstr, "P%04dS%04d", step_seq_pos[count], step_seq_dur[count]);
-    Wire.beginTransmission(I2C_ADDR);
-    Wire.write(cmdstr);
-    Wire.endTransmission();
-    //
-    step_writer_task.restartDelayed(step_seq_dur[count]); //msec
-    //
-    step_pos_prev = step_seq_pos[count];
-  }
-  else {
-    count = 0;
-  }
   //
-  count++;
+  // "P#SS-/-/-/" - P: P (play), SS: song #
+  //
+
+  //
+  sprintf(cmdstr, "P#%02d-/-/-/", 1);
+  Wire.beginTransmission(I2C_ADDR);
+  Wire.write(cmdstr);
+  Wire.endTransmission();
 }
-Task step_writer_task(0, TASK_ONCE, &step_writer);
+Task play_music_task(0, TASK_ONCE, &play_music);
+
+// stop music
+void stop_music() {
+
+  //
+  // "S-/-/-/-/-" - S: S (stop)
+  //
+
+  //
+  sprintf(cmdstr, "S-/-/-/-/-");
+  Wire.beginTransmission(I2C_ADDR);
+  Wire.write(cmdstr);
+  Wire.endTransmission();
+}
+Task stop_music_task(0, TASK_ONCE, &stop_music);
 
 //setup_member
 void setup_member() {
@@ -136,6 +101,7 @@ void setup_member() {
   //tasks
   runner.addTask(saying_greeting);
   saying_greeting.enable();
-  runner.addTask(step_writer_task);
+  runner.addTask(play_music_task);
+  runner.addTask(stop_music_task);
   runner.addTask(reaction_task);
 }

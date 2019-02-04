@@ -6,10 +6,7 @@
 //i2c protocol
 #define CMD_LENGTH 10
 #define CMD_BUFF_LEN (CMD_LENGTH + 1)
-char cmdstr[CMD_BUFF_LEN] = "PppppDdddd";
+char cmdstr[CMD_BUFF_LEN] = "P#SS-/-/-/";
 
-//
-// "PppppDdddd"
-//   'P' - target position (steps)
-//   'D' - movement duration (msec)
-//
+// "P#SS-/-/-/" - P: P (play), SS: song #
+// "S-/-/-/-/-" - S: S (stop)
