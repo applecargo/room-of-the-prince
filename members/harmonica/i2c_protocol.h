@@ -8,5 +8,5 @@
 #define CMD_BUFF_LEN (CMD_LENGTH + 1)
 char cmdstr[CMD_BUFF_LEN] = "P#SS-/-/-/";
 
-// "P#SS-/-/-/" - P: P (play), SS: song #
+// "P#SS-/-/-/" - P: P (play), SS: score #
 // "S-/-/-/-/-" - S: S (stop)

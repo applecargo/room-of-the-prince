@@ -4,6 +4,7 @@
 
 // my tasks
 extern Task play_music_task;
+extern Task stop_music_task;
 extern Task saying_greeting;
 
 // room protocol
@@ -28,7 +29,7 @@ void gotMessageCallback(uint32_t from, String & msg) { // REQUIRED
       play_music_task.restart();
       break;
     case HARMONICA_WORD_PLAY_STOP:
-      play_music_task.restart();
+      stop_music_task.restart();
       break;
     default:
       ;
@@ -67,10 +68,11 @@ Task saying_greeting(1000, TASK_FOREVER, &greeting);
 void play_music() {
 
   //
-  // "P#SS-/-/-/" - P: P (play), SS: song #
+  // "P#SS-/-/-/" - P: P (play), SS: score #
   //
 
   //
+  // sprintf(cmdstr, "P#%02d-/-/-/", 0); // score #0 is SPECIAL --> a random play.
   sprintf(cmdstr, "P#%02d-/-/-/", 1);
   Wire.beginTransmission(I2C_ADDR);
   Wire.write(cmdstr);
