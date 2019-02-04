@@ -17,7 +17,7 @@
 #define STEPS_PER_SEC_MAX    (RPM_MAX * RPM_TO_STEPS_PER_SEC)
 
 //
-AccelStepper stepper(AccelStepper::FULL4WIRE, 8, 9, 10, 11);
+AccelStepper stepper(AccelStepper::HALF4WIRE, 8, 9, 10, 11);
 
 //score list
 static int score_now = 0;
@@ -62,7 +62,14 @@ bool is_music_time = false;
 //
 void music_player_stepping() {
   //
-  if (stepper.distanceToGo() == 0 && is_music_time == true) {
+  long dist2go = stepper.distanceToGo();
+  Serial.print("dist. to go:");
+  Serial.println(dist2go);
+  //
+  Serial.print("cur. pos:");
+  Serial.println(stepper.currentPosition());
+  //
+  if (dist2go <= 0 && is_music_time == true) {
     //
     digitalWrite(RELAY_PIN, HIGH); // blow start! (and continue.)
     //
@@ -204,11 +211,12 @@ void setup() {
   Wire.begin(I2C_ADDR);
   Wire.onReceive(receiveEvent);
 
-  //stepper pins
+  //stepper
   pinMode(8, OUTPUT);
   pinMode(9, OUTPUT);
   pinMode(10, OUTPUT);
   pinMode(11, OUTPUT);
+  stepper.setMaxSpeed(1000);
 
   //tasks
   runner.init();
@@ -217,6 +225,7 @@ void setup() {
 }
 
 void loop() {
-  stepper.run();
+  stepper.runSpeed();
+  // stepper.run();
   runner.execute();
 }
