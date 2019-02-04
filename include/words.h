@@ -15,3 +15,5 @@
 #define BAG_WORD_HANDLE_UP       (ID_BAG + 0x01)
 #define BAG_WORD_HANDLE_DOWN     (ID_BAG + 0x02)
 #define BAG_WORD_SING            (ID_BAG + 0x03)
+
+#define HARMONICA_WORD_PLAY_START   (ID_HARMONICA + 0x01)

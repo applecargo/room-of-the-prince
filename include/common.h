@@ -14,7 +14,7 @@
 //
 #define ID_EVERYONE      (0x1F00 + 0x00)
 //(choice)
-#define IDENTITY         ID_BAG
+#define IDENTITY         ID_HARMONICA
 
 //
 #include <Arduino.h>

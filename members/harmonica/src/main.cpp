@@ -1,13 +1,15 @@
 #include <Arduino.h>
 
 //
+#include "../metrics.h"
 #include <Stepper.h>
-const int stepsPerRevolution = 200;
-Stepper myStepper(stepsPerRevolution, 8, 9, 10, 11);
+Stepper myStepper(STEPS_PER_REV, 8, 9, 10, 11);
 int stepCount = 0;
 
 //
-// "STEP%04d-/" - STEP: target step
+// "PppppDdddd"
+//   'P' - target position (steps)
+//   'D' - movement duration (msec)
 //
 
 //i2c
@@ -31,17 +33,26 @@ void receiveEvent(int numBytes) {
     String msg = String(cmdstr);
 
     //
-    // "STEP%04d-/" - STEP: target step
+    // "PppppDdddd"
+    //   'P' - target position (steps)
+    //   'D' - movement duration (msec)
     //
 
     //parse command string.
-    String target = msg.substring(4,8); // 4567
+    String str_position = msg.substring(1,5); // 1234
+    String str_duration = msg.substring(6,10); // 6789
+    float target = str_position.toFloat();
+    float duration = str_duration.toFloat();
 
     //step target
-    Serial.print("step target:");
+    Serial.print("target:");
     Serial.println(target);
+    Serial.print("duration:");
+    Serial.println(duration);
 
     //move stepper
+    float speed = target / duration; //steps per millisec.
+    myStepper.setSpeed(speed * STEPS_PER_MILLISEC_TO_RPM); //rpm
     myStepper.step(target);
     stepCount += target;
   }
