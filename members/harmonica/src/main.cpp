@@ -4,22 +4,20 @@
 #define RELAY_PIN 5
 
 //
-#include <CheapStepper.h>
+#include <AccelStepper.h>
 #define RPM_MAX               (18.0)
 #define STEPS_PER_REV         (4096.0)
 //
 // speed (rpm) * steps-per-revolution == speed (steps per minute)
 //  --> speed (steps per minute) / 60 == speed (steps per second)
-//  --> speed (steps per second) / 1000 == speed (steps per millisec)
-//  --> speed (steps per millisec) * 60 * 1000 / steps-per-revolution == speed (rpm)
-#define STEPS_PER_MILLISEC_TO_RPM (60.0 * 1000.0 / STEPS_PER_REV)
-//  --> speed (rpm) * steps-per-revolution / 60 / 1000 == speed (steps per millisec)
-#define RPM_TO_STEPS_PER_MILLISEC (STEPS_PER_REV / 60.0 / 1000.0)
-//  --> max. speed (rpm) --> max. speed (steps per millisec)
-#define STEPS_PER_MILLISEC_MAX (RPM_MAX * RPM_TO_STEPS_PER_MILLISEC)
+//  --> speed (steps per second) * 60 / steps-per-revolution == speed (rpm)
+#define STEPS_PER_SEC_TO_RPM (60.0 / STEPS_PER_REV)
+#define RPM_TO_STEPS_PER_SEC (STEPS_PER_REV / 60.0)
+//
+#define STEPS_PER_SEC_MAX    (RPM_MAX * RPM_TO_STEPS_PER_SEC)
 
 //
-CheapStepper stepper (8,9,10,11);
+AccelStepper stepper(AccelStepper::FULL4WIRE, 8, 9, 10, 11);
 
 //score list
 static int score_now = 0;
@@ -32,14 +30,14 @@ static int notes[SCORE_COUNT][SCORE_NOTE_MAX][2] = { //unit: (steps, millisec)
 
   //score #1
   {
-    {  1000,  2000}, // ( ( 1000 / 4096 ) / 2.000 ) * 60 = 7.32
-    {  3000,  2000}, // ( ( 2000 / 4096 ) / 2.000 ) * 60 = 14.65
-    {  1000,  3000}, // ( ( 2000 / 4096 ) / 3.000 ) * 60 = 9.77
-    { 10000,   100}, // ( ( 9000 / 4096 ) /  .100 ) * 60 = 1332.42 * / ??
-    {  3000,  2000}, // ( ( 7000 / 4096 ) / 2.000 ) * 60 = 8.73 / ?
-    { 10000,  2500}, // ( ( 7000 / 4096 ) / 2.500 ) * 60 = 41.02 *
-    {  1000,  1000}, // ( ( 9000 / 4096 ) / 1.000 ) * 60 = 13.24 / ?
-    {   100,   400}  // ( ( 900  / 4096 ) /  .400 ) * 60 = 32.96 *
+    {  1000,  2000},
+    {  3000,  2000},
+    {  1000,  3000},
+    { 10000,   100},
+    {  3000,  2000},
+    { 10000,  2500},
+    {  1000,  1000},
+    {   100,   400}
   },
 
   // score #2
@@ -64,17 +62,18 @@ bool is_music_time = false;
 //
 void music_player_stepping() {
   //
-  if (stepper.getStepsLeft() == 0 && is_music_time == true) {
+  if (stepper.distanceToGo() == 0 && is_music_time == true) {
     //
     digitalWrite(RELAY_PIN, HIGH); // blow start! (and continue.)
     //
-    float cur_step = stepper.getStep();
+    float cur_step = stepper.currentPosition();
     float target_step = notes[score_now][note_idx][0];
     float dur = notes[score_now][note_idx][1];
     float steps = target_step - cur_step;
-    float rpm = fabs(steps / dur * STEPS_PER_MILLISEC_TO_RPM); // unit conv.: (steps/msec) --> (rpm)
+    float velocity = steps / dur * 1000; // unit conv.: (steps/msec) --> (steps/sec)
+    float speed = fabs(velocity);
     //
-    if (rpm > RPM_MAX) {
+    if (speed > STEPS_PER_SEC_MAX) {
       Serial.println("oh.. isn't it TOO FAST??");
     } else {
       Serial.println("okay. i go now.");
@@ -85,13 +84,15 @@ void music_player_stepping() {
     Serial.print(" --> cur_step : "); Serial.println(cur_step);
     Serial.print(" --> target_step : "); Serial.println(target_step);
     Serial.print(" --> steps : "); Serial.println(steps);
-    Serial.print(" --> STEPS_PER_MILLISEC_TO_RPM : "); Serial.println(STEPS_PER_MILLISEC_TO_RPM);
-
+    Serial.print(" --> velocity(steps/sec) : "); Serial.println(velocity);
+    Serial.print(" --> speed(steps/sec) : "); Serial.println(speed);
+    Serial.print(" --> speed(rpm) : "); Serial.println(speed * STEPS_PER_SEC_TO_RPM);
     //
-    Serial.print(" --> speed(rpm) : "); Serial.println(rpm);
-    //
-    stepper.setRpm(rpm);
-    stepper.newMoveTo(steps > 0, target_step); //first arg. : "CW or CCW?"
+    stepper.moveTo(target_step);
+    stepper.setSpeed(velocity);
+    //NOTE: this should come LATER!
+    //  --> 'moveTo' re-calculate the velocity.
+    //  --> so we need to override it.
     //
     note_idx++;
     //
@@ -121,13 +122,16 @@ void music_player_stop() {
     //block 'music_player_stepping_task'
     is_music_time = false;
     // stay still for sometime! (while blowing stops..)
-    stepper.newMoveTo(true, stepper.getStep()); //first arg. : "CW or CCW?"
+    stepper.moveTo(stepper.currentPosition()); // to cancel, any left over movement immediately.
     // blow stop!
     digitalWrite(RELAY_PIN, LOW);
   } else {
     //okay, blower is over, now. then, go home position.
-    stepper.setRpm(20);
-    stepper.newMoveTo(false, 0); //first arg. : "CW or CCW?"
+    stepper.moveTo(0);
+    stepper.setSpeed(20 * RPM_TO_STEPS_PER_SEC); // 20 rpm
+    //NOTE: this should come LATER!
+    //  --> 'moveTo' re-calculate the velocity.
+    //  --> so we need to override it.
   }
 }
 Task music_player_stop_task(5000, 2, music_player_stop);
@@ -216,49 +220,3 @@ void loop() {
   stepper.run();
   runner.execute();
 }
-
-// //DEBUG
-// Serial.println("[SEQ]");
-// Serial.print  ("  count: "); Serial.println(count);
-// Serial.print  ("  step_seq_pos: "); Serial.println(step_seq_pos[count]);
-// Serial.print  ("  step_pos_prev: "); Serial.println(step_pos_prev);
-// Serial.print  ("  steps_to_move: "); Serial.println(steps_to_move);
-// Serial.print  ("  moving_spd: "); Serial.print(moving_speed); Serial.println(" (steps/msec)");
-// Serial.print  ("  max_spd: "); Serial.print(STEPS_PER_MILLISEC_MAX); Serial.println(" (steps/msec)");
-
-
-//
-// static int count = 0;
-// static int step_pos_prev = 0;
-// static char cstr[256] = {0, };
-// if (count < 64) {
-//   //
-//   // sanity check (speed)
-//   //
-//   float steps_to_move = step_seq_pos[count] - step_pos_prev;
-//   float moving_speed = steps_to_move / step_seq_dur[count]; // unit: (steps/msec)
-//   if (steps_to_move != 0) {
-//     if (fabs(moving_speed) > STEPS_PER_MILLISEC_MAX) {
-//       //oh.. that might be TOO fast, isn't it??
-//       Serial.println("oh.. isn't it TOO FAST??");
-//     } else {
-//       //my next move will be this fast.. and i can do that.
-//       Serial.println("okay. i go now.");
-//     }
-//   }
-//
-//   //DEBUG
-//   Serial.println("[SEQ]");
-//   Serial.print  ("  count: "); Serial.println(count);
-//   Serial.print  ("  step_seq_pos: "); Serial.println(step_seq_pos[count]);
-//   Serial.print  ("  step_pos_prev: "); Serial.println(step_pos_prev);
-//   Serial.print  ("  steps_to_move: "); Serial.println(steps_to_move);
-//   Serial.print  ("  moving_spd: "); Serial.print(moving_speed); Serial.println(" (steps/msec)");
-//   Serial.print  ("  max_spd: "); Serial.print(STEPS_PER_MILLISEC_MAX); Serial.println(" (steps/msec)");
-//
-//
-//   //
-//   // "P#SS-/-/-/" - P: P (play), SS: score #
-//   // "S-/-/-/-/-" - S: S (stop)
-//   //
-//
