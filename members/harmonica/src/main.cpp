@@ -5,19 +5,30 @@
 
 //
 #include <AccelStepper.h>
-#define RPM_MAX               (18.0)
-#define STEPS_PER_REV         (4096.0)
+//
+#define STEP_MODE_CONSTANT_VEL  (0xDE00 + 0x01)
+#define STEP_MODE_ACCELERATING  (0xDE00 + 0x02)
+//
+#define STEP_MODE               STEP_MODE_CONSTANT_VEL
+// #define STEP_MODE               STEP_MODE_ACCELERATING
+// NOTE: --> well.. acceleration enabled mode.. is a bit worse. (less torque)
+//
+#define STEPS_PER_REV           (2048.0)
 //
 // speed (rpm) * steps-per-revolution == speed (steps per minute)
 //  --> speed (steps per minute) / 60 == speed (steps per second)
 //  --> speed (steps per second) * 60 / steps-per-revolution == speed (rpm)
-#define STEPS_PER_SEC_TO_RPM (60.0 / STEPS_PER_REV)
-#define RPM_TO_STEPS_PER_SEC (STEPS_PER_REV / 60.0)
+#define STEPS_PER_SEC_TO_RPM    (60.0 / STEPS_PER_REV)
+#define RPM_TO_STEPS_PER_SEC    (STEPS_PER_REV / 60.0)
+
+// parameter (torque-speed trade-off)
+#define STEPS_PER_SEC_MAX       (500)
+#define RPM_MAX                 (STEPS_PER_SEC_MAX * STEPS_PER_SEC_TO_RPM)
 //
-#define STEPS_PER_SEC_MAX    (RPM_MAX * RPM_TO_STEPS_PER_SEC)
+#define ACCELERATION_MAX        (500)
 
 //
-AccelStepper stepper(AccelStepper::HALF4WIRE, 8, 9, 10, 11);
+AccelStepper stepper(AccelStepper::FULL4WIRE, 8, 9, 10, 11);
 
 //score list
 static int score_now = 0;
@@ -30,14 +41,14 @@ static int notes[SCORE_COUNT][SCORE_NOTE_MAX][2] = { //unit: (steps, millisec)
 
   //score #1
   {
-    {  1000,  2000},
-    {  3000,  2000},
-    {  1000,  3000},
-    { 10000,   100},
-    {  3000,  2000},
-    { 10000,  2500},
-    {  1000,  1000},
-    {   100,   400}
+    {   200,  1000},
+    {   400,  1000},
+    {   600,  1000},
+    {   800,  1000},
+    {   900,  1000},
+    {   650,  1000},
+    {   800,  1000},
+    {  1200,  1000}
   },
 
   // score #2
@@ -58,7 +69,7 @@ static int notes[SCORE_COUNT][SCORE_NOTE_MAX][2] = { //unit: (steps, millisec)
 Scheduler runner;
 extern Task music_player_stepping_task;
 extern Task music_player_stop_task;
-extern Task music_player_step_monitor_task;
+extern Task music_player_step_monitor_task; // DEBUG
 bool is_music_time = false;
 //
 void music_player_stepping() {
@@ -81,13 +92,16 @@ void music_player_stepping() {
     }
 
     //DEBUG
-    Serial.print(" --> dur : "); Serial.println(dur);
-    Serial.print(" --> cur_step : "); Serial.println(cur_step);
-    Serial.print(" --> target_step : "); Serial.println(target_step);
-    Serial.print(" --> steps : "); Serial.println(steps);
-    Serial.print(" --> velocity(steps/sec) : "); Serial.println(velocity);
+    Serial.print(" --> note_idx : "); Serial.println(note_idx);
+    // Serial.print(" --> dur : "); Serial.println(dur);
+    // Serial.print(" --> cur_step : "); Serial.println(cur_step);
+    // Serial.print(" --> target_step : "); Serial.println(target_step);
+    // Serial.print(" --> steps : "); Serial.println(steps);
+    // Serial.print(" --> velocity(steps/sec) : "); Serial.println(velocity);
     Serial.print(" --> speed(steps/sec) : "); Serial.println(speed);
-    Serial.print(" --> speed(rpm) : "); Serial.println(speed * STEPS_PER_SEC_TO_RPM);
+    // Serial.print(" --> speed(rpm) : "); Serial.println(speed * STEPS_PER_SEC_TO_RPM);
+    Serial.print(" --> STEPS_PER_SEC_MAX(steps/sec) : "); Serial.println(STEPS_PER_SEC_MAX);
+
     //
     stepper.moveTo(target_step);
     stepper.setSpeed(velocity);
@@ -97,20 +111,18 @@ void music_player_stepping() {
     //
     note_idx++;
     //
-    if (note_idx >= SCORE_NOTE_MAX) { //end of the song.
+    if (note_idx >= SCORE_NOTE_MAX) { //the last note of the song.
+      // ok. i'm done. schedule a stopping task!
+      music_player_stop_task.restartDelayed(dur);
       // rewind the reel.
       note_idx = 0;
-      // blow stop!
-      digitalWrite(RELAY_PIN, LOW);
-      // schedule a stopping task!
-      music_player_stop_task.restart();
     } else {
       // reschedule myself..
       music_player_stepping_task.restartDelayed(dur);
     }
   } else {
     // reschedule myself..
-    music_player_stepping_task.restartDelayed(100);
+    music_player_stepping_task.restartDelayed(50);
     //
     // Serial.println("stepper BUSY! will wait a bit.");
   }
@@ -123,13 +135,13 @@ void music_player_stop() {
     //block 'music_player_stepping_task'
     is_music_time = false;
     // stop for sometime! (while blowing stops..)
-    stepper.moveTo(stepper.currentPosition());
+    stepper.moveTo(stepper.currentPosition()); //works better than 'stop()'..
     // blow stop!
     digitalWrite(RELAY_PIN, LOW);
   } else {
     //okay, blower is over, now. then, go home position.
     stepper.moveTo(0);
-    stepper.setSpeed(20 * RPM_TO_STEPS_PER_SEC * -1); // 20 rpm, CCW
+    stepper.setSpeed(20 * RPM_TO_STEPS_PER_SEC * -1); // 20 rpm, CCW <-- take NOTE! on (* -1). otherwise this takes forever.
     //NOTE: 'setSpeed' should come LATER than 'moveTo'!
     //  --> 'moveTo' re-calculate the velocity.
     //  --> so we need to re-override it.
@@ -220,8 +232,11 @@ void setup() {
   /// "
   /// The fastest motor speed that can be reliably supported is about 4000 steps per
   /// second at a clock frequency of 16 MHz on Arduino such as Uno etc.
-  /// "
-  stepper.setMaxSpeed(1000); //steps per second (trade-off between speed vs. torque)
+  /// " @ AccelStepper.h
+  stepper.setMaxSpeed(STEPS_PER_SEC_MAX); //steps per second (trade-off between speed vs. torque)
+#if (STEP_MODE == STEP_MODE_ACCELERATING)
+  stepper.setAcceleration(ACCELERATION_MAX);
+#endif
 
   //tasks
   runner.init();
@@ -229,8 +244,8 @@ void setup() {
   runner.addTask(music_player_stop_task);
 
   //DEBUG
-  runner.addTask(music_player_step_monitor_task);
-  music_player_step_monitor_task.enable();
+  // runner.addTask(music_player_step_monitor_task);
+  // music_player_step_monitor_task.enable();
 }
 
 void loop() {
@@ -239,6 +254,10 @@ void loop() {
 
   //stepper
   if (stepper.distanceToGo() != 0) {
+#if (STEP_MODE == STEP_MODE_CONSTANT_VEL)
     stepper.runSpeed();
+#elif (STEP_MODE == STEP_MODE_ACCELERATING)
+    stepper.run();
+#endif
   }
 }
