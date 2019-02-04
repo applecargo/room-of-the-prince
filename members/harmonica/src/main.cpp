@@ -20,9 +20,10 @@
 Unistep2 stepper(8, 9, 10, 11, 4096, 1000);
 
 //score list
+static int score_now = 0;
 static int note_count = 0;
 static int score_steps[64] = { \
-  100, 200, 300, 200, 100, 300, 1000, 1, };   // unit: steps
+  1000, -2000, 3000, -2000, 1000, -3000, 10000, 1, };   // unit: steps
 // static int step_seq_dur[64] = { \
 //   100, 100, 100, 100, 100, 100, 100, 100, \
 //   100, 100, 100, 100, 100, 100, 100, 100, \
@@ -59,7 +60,7 @@ void receiveEvent(int numBytes) {
       // "P#SS-/-/-/" - P: P (play), SS: song #
       //
       String str_music = msg.substring(2,4); // 23
-      music_now = str_music.toInt();
+      score_now = str_music.toInt();
       //
       // sound_player_start_task.restart();
       //
@@ -98,6 +99,7 @@ void loop() {
   stepper.run();
   if ( stepper.stepsToGo() == 0 ) {
     stepper.move(score_steps[note_count]);
+    Serial.println(score_steps[note_count]);
     note_count++;
     if (note_count >= 64) {
       note_count = 0;
