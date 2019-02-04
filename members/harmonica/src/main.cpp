@@ -70,7 +70,7 @@ void music_player_stepping() {
     //
     float cur_step = stepper.getStep();
     float target_step = notes[score_now][note_idx][0];
-    float dur = note_dur[score_now][note_idx][1];
+    float dur = notes[score_now][note_idx][1];
     float steps = target_step - cur_step;
     float rpm = fabs(steps / dur * STEPS_PER_MILLISEC_TO_RPM); // unit conv.: (steps/msec) --> (rpm)
     //
