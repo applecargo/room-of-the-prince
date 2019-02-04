@@ -5,6 +5,9 @@
 #include <Stepper.h>
 Stepper myStepper(STEPS_PER_REV, 8, 9, 10, 11);
 int stepCount = 0;
+float target = 0; //steps
+float duration = 1000; //msec
+// bool new_move = false;
 
 //
 // "PppppDdddd"
@@ -41,20 +44,15 @@ void receiveEvent(int numBytes) {
     //parse command string.
     String str_position = msg.substring(1,5); // 1234
     String str_duration = msg.substring(6,10); // 6789
-    float target = str_position.toFloat();
-    float duration = str_duration.toFloat();
+    target = str_position.toFloat();
+    duration = str_duration.toFloat();
+    // new_move = true;
 
-    //step target
-    Serial.print("target:");
-    Serial.println(target);
-    Serial.print("duration:");
-    Serial.println(duration);
-
-    //move stepper
-    float speed = target / duration; //steps per millisec.
-    myStepper.setSpeed(speed * STEPS_PER_MILLISEC_TO_RPM); //rpm
-    myStepper.step(target);
-    stepCount += target;
+    // //step target
+    // Serial.print("target:");
+    // Serial.println(target);
+    // Serial.print("duration:");
+    // Serial.println(duration);
   }
 }
 
@@ -75,5 +73,10 @@ void setup() {
 }
 
 void loop() {
-  ;
+  //move stepper
+  float speed = target / duration; //steps per millisec.
+  myStepper.setSpeed(speed * STEPS_PER_MILLISEC_TO_RPM); //rpm
+  Serial.println(speed * STEPS_PER_MILLISEC_TO_RPM);
+  myStepper.step(target);
+  stepCount += target;
 }

@@ -62,8 +62,19 @@ void greeting() {
 Task saying_greeting(1000, TASK_FOREVER, &greeting);
 
 // step writer
-static int step_seq_pos[64] = {1, };   // unit: steps
-static int step_seq_dur[64] = {100, }; // unit: msec
+// static int step_seq_pos[64] = {1, };   // unit: steps
+// static int step_seq_dur[64] = {100, }; // unit: msec
+static int step_seq_pos[64] = { \
+  100, 200, 300, 200, 100, 300, 1000, 1, };   // unit: steps
+static int step_seq_dur[64] = { \
+  100, 100, 100, 100, 100, 100, 100, 100, \
+  100, 100, 100, 100, 100, 100, 100, 100, \
+  100, 100, 100, 100, 100, 100, 100, 100, \
+  100, 100, 100, 100, 100, 100, 100, 100, \
+  100, 100, 100, 100, 100, 100, 100, 100, \
+  100, 100, 100, 100, 100, 100, 100, 100, \
+  100, 100, 100, 100, 100, 100, 100, 100, \
+  100, 100, 100, 100, 100, 100, 100, 100}; // unit: msec
 void step_writer() {
   static int count = 0;
   static int step_pos_prev = 0;
@@ -72,25 +83,26 @@ void step_writer() {
     //
     // sanity check (speed)
     //
-    float moving_speed = (float)(step_seq_pos[count] - step_pos_prev) / step_seq_dur[count]; // unit: (steps/msec)
-    if (moving_speed > STEPS_PER_MILLISEC_MAX) {
-      //oh.. that might be TOO fast, isn't it??
-      sprintf(cstr,
-              "[SURPRISING!] oh.. can i do this??\n  count: %d\n  step_seq_pos: %d\n  step_pos_prev: %d\n moving_spd: %f (steps/msec)\n max_spd: %f (steps/msec)",
-              count,
-              step_seq_pos[count],
-              step_seq_dur[count],
-              moving_speed,
-              STEPS_PER_MILLISEC_MAX);
-      Serial.println(cstr);
-    } else {
-      //my next move will be this fast.. and i can do that.
-      sprintf(cstr,
-              "[informing..] i will move, now with:\n  speed (steps/msec) : %f\n  speed (rpm) : %f",
-              moving_speed,
-              moving_speed * STEPS_PER_MILLISEC_TO_RPM);
-      Serial.println(cstr);
+    float steps_to_move = step_seq_pos[count] - step_pos_prev;
+    float moving_speed = steps_to_move / step_seq_dur[count]; // unit: (steps/msec)
+    if (steps_to_move != 0) {
+      if (fabs(moving_speed) > STEPS_PER_MILLISEC_MAX) {
+        //oh.. that might be TOO fast, isn't it??
+        Serial.println("oh.. isn't it TOO FAST??");
+      } else {
+        //my next move will be this fast.. and i can do that.
+        Serial.println("okay. i go now.");
+      }
     }
+
+    //DEBUG
+    Serial.println("[SEQ]");
+    Serial.print  ("  count: "); Serial.println(count);
+    Serial.print  ("  step_seq_pos: "); Serial.println(step_seq_pos[count]);
+    Serial.print  ("  step_pos_prev: "); Serial.println(step_pos_prev);
+    Serial.print  ("  steps_to_move: "); Serial.println(steps_to_move);
+    Serial.print  ("  moving_spd: "); Serial.print(moving_speed); Serial.println(" (steps/msec)");
+    Serial.print  ("  max_spd: "); Serial.print(STEPS_PER_MILLISEC_MAX); Serial.println(" (steps/msec)");
 
     //
     // "PppppDdddd"

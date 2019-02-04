@@ -47,17 +47,19 @@ void button() {
     // compose the message and send!
     //sprintf(msg_cstr, "[%06d:%03d] To lookat: look around now!", ID_LOOK_AT, LOOKAT_WORD_LOOK_AROUND);
     //sprintf(msg_cstr, "[%06d:%03d] To thunder: go rrrrrrrrr now!", ID_THUNDER, THUNDER_WORD_RRRRR);
-    if (states == 0) {
-      sprintf(msg_cstr, "[%06d:%03d] To bag: handle up now!", ID_BAG, BAG_WORD_HANDLE_UP);
-    } else if (states == 1) {
-      sprintf(msg_cstr, "[%06d:%03d] To bag: handle down now!", ID_BAG, BAG_WORD_HANDLE_DOWN);
-    } else if (states == 2) {
-      sprintf(msg_cstr, "[%06d:%03d] To bag: sing now!", ID_BAG, BAG_WORD_SING);
-    }
-    states++;
-    if (states == 3) {
-      states = 0;
-    }
+    // if (states == 0) {
+    //   sprintf(msg_cstr, "[%06d:%03d] To bag: handle up now!", ID_BAG, BAG_WORD_HANDLE_UP);
+    // } else if (states == 1) {
+    //   sprintf(msg_cstr, "[%06d:%03d] To bag: handle down now!", ID_BAG, BAG_WORD_HANDLE_DOWN);
+    // } else if (states == 2) {
+    //   sprintf(msg_cstr, "[%06d:%03d] To bag: sing now!", ID_BAG, BAG_WORD_SING);
+    // }
+    // states++;
+    // if (states == 3) {
+    //   states = 0;
+    // }
+    sprintf(msg_cstr, "[%06d:%03d] To harmonica: harmonica time! ha-mororo~~", ID_HARMONICA, HARMONICA_WORD_PLAY_START);
+
     msg = String(msg_cstr);
     mesh.sendBroadcast(msg);
     // also show to the display
