@@ -62,14 +62,7 @@ bool is_music_time = false;
 //
 void music_player_stepping() {
   //
-  long dist2go = stepper.distanceToGo();
-  Serial.print("dist. to go:");
-  Serial.println(dist2go);
-  //
-  Serial.print("cur. pos:");
-  Serial.println(stepper.currentPosition());
-  //
-  if (dist2go <= 0 && is_music_time == true) {
+  if (stepper.distanceToGo() == 0 && is_music_time == true) {
     //
     digitalWrite(RELAY_PIN, HIGH); // blow start! (and continue.)
     //
@@ -97,9 +90,9 @@ void music_player_stepping() {
     //
     stepper.moveTo(target_step);
     stepper.setSpeed(velocity);
-    //NOTE: this should come LATER!
+    //NOTE: 'setSpeed' should come LATER than 'moveTo'!
     //  --> 'moveTo' re-calculate the velocity.
-    //  --> so we need to override it.
+    //  --> so we need to re-override it.
     //
     note_idx++;
     //
@@ -128,17 +121,17 @@ void music_player_stop() {
   if (music_player_stop_task.isFirstIteration()) {
     //block 'music_player_stepping_task'
     is_music_time = false;
-    // stay still for sometime! (while blowing stops..)
-    stepper.moveTo(stepper.currentPosition()); // to cancel, any left over movement immediately.
+    // stop for sometime! (while blowing stops..)
+    stepper.stop();
     // blow stop!
     digitalWrite(RELAY_PIN, LOW);
   } else {
     //okay, blower is over, now. then, go home position.
     stepper.moveTo(0);
     stepper.setSpeed(20 * RPM_TO_STEPS_PER_SEC); // 20 rpm
-    //NOTE: this should come LATER!
+    //NOTE: 'setSpeed' should come LATER than 'moveTo'!
     //  --> 'moveTo' re-calculate the velocity.
-    //  --> so we need to override it.
+    //  --> so we need to re-override it.
   }
 }
 Task music_player_stop_task(5000, 2, music_player_stop);
@@ -216,7 +209,11 @@ void setup() {
   pinMode(9, OUTPUT);
   pinMode(10, OUTPUT);
   pinMode(11, OUTPUT);
-  stepper.setMaxSpeed(1000);
+  /// "
+  /// The fastest motor speed that can be reliably supported is about 4000 steps per
+  /// second at a clock frequency of 16 MHz on Arduino such as Uno etc.
+  /// "
+  stepper.setMaxSpeed(1000); //steps per second (trade-off between speed vs. torque)
 
   //tasks
   runner.init();
@@ -225,7 +222,11 @@ void setup() {
 }
 
 void loop() {
-  stepper.runSpeed();
-  // stepper.run();
+  //task
   runner.execute();
+
+  //stepper
+  if (stepper.distanceToGo() != 0) {
+    stepper.runSpeed();
+  }
 }
