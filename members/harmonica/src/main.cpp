@@ -54,17 +54,17 @@ void music_player_stepping() {
     float target_step = note_steps[score_now][note_idx];
     float dur = note_dur[score_now][note_idx];
     float steps = target_step - cur_step;
-    float speed = fabs(steps / dur); // unit: (steps/msec)
+    float rpm = fabs(steps / dur * STEPS_PER_MILLISEC_TO_RPM); // unit conv.: (steps/msec) --> (rpm)
     //
-    if (fabs(speed) > STEPS_PER_MILLISEC_MAX) {
+    if (rpm > RPM_MAX) {
       Serial.println("oh.. isn't it TOO FAST??");
     } else {
       Serial.println("okay. i go now.");
     }
     //
-    Serial.print(" --> speed: "); Serial.println(speed);
+    Serial.print(" --> speed(rpm) : "); Serial.println(rpm);
     //
-    stepper.setRpm(speed * STEPS_PER_MILLISEC_TO_RPM);
+    stepper.setRpm(rpm);
     stepper.newMoveTo(steps > 0, target_step); //first arg. : "CW or CCW?"
     //
     note_idx++;
@@ -94,13 +94,13 @@ void music_player_stop() {
   if (music_player_stop_task.isFirstIteration()) {
     //block 'music_player_stepping_task'
     is_music_time = false;
-    // stay for sometime! (while blowing stops..)
-    stepper.setRpm(10);
+    // stay still for sometime! (while blowing stops..)
     stepper.newMoveTo(true, stepper.getStep()); //first arg. : "CW or CCW?"
     // blow stop!
     digitalWrite(RELAY_PIN, LOW);
   } else {
-    //then, go home.
+    //okay, blower is over, now. then, go home position.
+    stepper.setRpm(20);
     stepper.newMoveTo(false, 0); //first arg. : "CW or CCW?"
   }
 }
