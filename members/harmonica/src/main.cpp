@@ -58,6 +58,7 @@ static int notes[SCORE_COUNT][SCORE_NOTE_MAX][2] = { //unit: (steps, millisec)
 Scheduler runner;
 extern Task music_player_stepping_task;
 extern Task music_player_stop_task;
+extern Task music_player_step_monitor_task;
 bool is_music_time = false;
 //
 void music_player_stepping() {
@@ -122,19 +123,26 @@ void music_player_stop() {
     //block 'music_player_stepping_task'
     is_music_time = false;
     // stop for sometime! (while blowing stops..)
-    stepper.stop();
+    stepper.moveTo(stepper.currentPosition());
     // blow stop!
     digitalWrite(RELAY_PIN, LOW);
   } else {
     //okay, blower is over, now. then, go home position.
     stepper.moveTo(0);
-    stepper.setSpeed(20 * RPM_TO_STEPS_PER_SEC); // 20 rpm
+    stepper.setSpeed(20 * RPM_TO_STEPS_PER_SEC * -1); // 20 rpm, CCW
     //NOTE: 'setSpeed' should come LATER than 'moveTo'!
     //  --> 'moveTo' re-calculate the velocity.
     //  --> so we need to re-override it.
   }
 }
 Task music_player_stop_task(5000, 2, music_player_stop);
+
+//
+void music_player_step_monitor() {
+  Serial.print("currentPosition: ");
+  Serial.println(stepper.currentPosition());
+}
+Task music_player_step_monitor_task(100, TASK_FOREVER, music_player_step_monitor);
 
 //i2c
 //pin connection
@@ -219,6 +227,10 @@ void setup() {
   runner.init();
   runner.addTask(music_player_stepping_task);
   runner.addTask(music_player_stop_task);
+
+  //DEBUG
+  runner.addTask(music_player_step_monitor_task);
+  music_player_step_monitor_task.enable();
 }
 
 void loop() {
