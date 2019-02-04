@@ -39,6 +39,12 @@
 #elif (IDENTITY == ID_HARMONICA)
 #include "../members/harmonica.cpp"
 //
+#elif (IDENTITY == ID_FUR)
+#include "../members/fur.cpp"
+//
+#elif (IDENTITY == ID_KEYHOLDER)
+#include "../members/keyholder.cpp"
+//
 #endif
 
 // painless mesh

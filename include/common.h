@@ -11,6 +11,9 @@
 #define ID_BAG           (0x1D00 + 0x70)
 #define ID_DISTANCE      (0x1D00 + 0x80)
 #define ID_HARMONICA     (0x1D00 + 0x90)
+#define ID_FUR           (0x1D00 + 0xA0)
+#define ID_KEYHOLDER     (0x1D00 + 0xB0)
+
 //
 #define ID_EVERYONE      (0x1F00 + 0x00)
 //(choice)
