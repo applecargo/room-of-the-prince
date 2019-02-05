@@ -61,6 +61,7 @@ void button() {
     sprintf(msg_cstr, "[%06d:%03d] To harmonica: harmonica time! ha-mororo~~", ID_HARMONICA, HARMONICA_WORD_PLAY_START);
     sprintf(msg_cstr, "[%06d:%03d] To fur: speak out now!", ID_FUR, FUR_WORD_SING);
     sprintf(msg_cstr, "[%06d:%03d] To keyholder: now falling falling!", ID_KEYHOLDER, KEYHOLDER_WORD_FALLING_KEYS);
+    sprintf(msg_cstr, "[%06d:%03d] To mirror: show me, please!", ID_MIRROR, MIRROR_WORD_IWILLSHOWYOU);
 
     msg = String(msg_cstr);
     mesh.sendBroadcast(msg);

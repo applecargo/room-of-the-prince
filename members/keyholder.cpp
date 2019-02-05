@@ -3,9 +3,9 @@
 static Servo myservo1;
 static Servo myservo2;
 static Servo myservo3;
-#define HOLDING_ANGLE 42
-#define HOLDING_ANGLE2 38
-#define FALLING_ANGLE 22
+#define HOLDING_ANGLE  40
+#define HOLDING_ANGLE2 40
+#define FALLING_ANGLE  22
 #define FALLING_ANGLE2 56
 #define FALLING_TIME   1000
 #define HOLDING_TIME   200
@@ -56,10 +56,10 @@ void reaction() {
     count = 0;
   }
   if ((message & mask) == 0) {
-    tone(D7, 1500 + count * 50);
+
   }
   else {
-    noTone(D7);
+
   }
   mask = mask >> 1;
   count++;
@@ -78,11 +78,11 @@ void fallingkey1() {
   static bool first = true;
   static int lasttime = millis();
   if (first || millis() - lasttime > 10000) { // block re-trigger for 10 sec.
-    int angle = FALLING_ANGLE;
-    myservo1.write(angle);
+    int angle1 = FALLING_ANGLE;
+    myservo1.write(angle1);
     //
     Serial.print("red key fall down now:");
-    Serial.println(angle);
+    Serial.println(angle1);
     //
     holdingkey1_task.restartDelayed(FALLING_TIME);
     //
@@ -93,11 +93,11 @@ void fallingkey1() {
 Task fallingkey1_task(0, TASK_ONCE, &fallingkey1);
 
 void holdingkey1() {
-  int angle = HOLDING_ANGLE;
-  myservo1.write(angle);
+  int angle1 = HOLDING_ANGLE;
+  myservo1.write(angle1);
   //
   Serial.print("wait for the keys");
-  Serial.println(angle);
+  Serial.println(angle1);
   fallingkey2_task.restartDelayed(HOLDING_TIME);
 }
 Task holdingkey1_task(0, TASK_ONCE, &holdingkey1);
@@ -134,11 +134,11 @@ void fallingkey3() {
   static bool first = true;
   static int lasttime = millis();
   if (first || millis() - lasttime > 10000) { // block re-trigger for 10 sec.
-    int angle = FALLING_ANGLE;
-    myservo3.write(angle);
+    int angle3 = FALLING_ANGLE;
+    myservo3.write(angle3);
     //
     Serial.print("red key fall down now:");
-    Serial.println(angle);
+    Serial.println(angle3);
     //
     holdingkey3_task.restartDelayed(FALLING_TIME);
     //
@@ -149,11 +149,11 @@ void fallingkey3() {
 Task fallingkey3_task(0, TASK_ONCE, &fallingkey3);
 
 void holdingkey3() {
-  int angle = HOLDING_ANGLE;
-  myservo3.write(angle);
+  int angle3 = HOLDING_ANGLE;
+  myservo3.write(angle3);
   //
   Serial.print("wait for the keys");
-  Serial.println(angle);
+  Serial.println(angle3);
 }
 Task holdingkey3_task(0, TASK_ONCE, &holdingkey3);
 //setup_member
@@ -164,8 +164,7 @@ void setup_member() {
   myservo2.attach(D7);
   myservo3.attach(D8);
 
-  //tone
-  pinMode(D7, OUTPUT);
+
 
   //tasks
   runner.addTask(saying_greeting);

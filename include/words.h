@@ -22,3 +22,5 @@
 #define FUR_WORD_SING                (ID_FUR + 0x01)
 
 #define KEYHOLDER_WORD_FALLING_KEYS  (ID_KEYHOLDER + 0x01)
+
+#define MIRROR_WORD_IWILLSHOWYOU     (ID_MIRROR + 0x01)

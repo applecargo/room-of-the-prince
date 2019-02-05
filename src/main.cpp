@@ -45,6 +45,9 @@
 #elif (IDENTITY == ID_KEYHOLDER)
 #include "../members/keyholder.cpp"
 //
+#elif (IDENTITY == ID_MIRROR)
+#include "../members/mirror.cpp"
+//
 #endif
 
 // painless mesh

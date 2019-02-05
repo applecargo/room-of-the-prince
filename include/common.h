@@ -13,11 +13,12 @@
 #define ID_HARMONICA     (0x1D00 + 0x90)
 #define ID_FUR           (0x1D00 + 0xA0)
 #define ID_KEYHOLDER     (0x1D00 + 0xB0)
+#define ID_MIRROR        (0x1D00 + 0xC0)
 
 //
 #define ID_EVERYONE      (0x1F00 + 0x00)
 //(choice)
-#define IDENTITY         ID_HARMONICA
+#define IDENTITY         ID_MIRROR
 
 //
 #include <Arduino.h>
