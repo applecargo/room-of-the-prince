@@ -48,6 +48,9 @@
 #elif (IDENTITY == ID_MIRROR)
 #include "../members/mirror.cpp"
 //
+#elif (IDENTITY == ID_GPS)
+#include "../members/gps.cpp"
+//
 #endif
 
 // painless mesh

@@ -14,11 +14,12 @@
 #define ID_FUR           (0x1D00 + 0xA0)
 #define ID_KEYHOLDER     (0x1D00 + 0xB0)
 #define ID_MIRROR        (0x1D00 + 0xC0)
+#define ID_GPS           (0x1D00 + 0xD0)
 
 //
 #define ID_EVERYONE      (0x1F00 + 0x00)
 //(choice)
-#define IDENTITY         ID_MIRROR
+#define IDENTITY         ID_LOOK_AT
 
 //
 #include <Arduino.h>
@@ -31,7 +32,7 @@ extern painlessMesh mesh;
 #define NODE_TYPE_AP_STA    (0x40DE0001)
 #define NODE_TYPE_STA_ONLY  (0x40DE0002)
 #define NODE_TYPE           NODE_TYPE_AP_STA
-#if (IDENTITY == ID_THUNDER)
+#if (IDENTITY == ID_THUNDER || IDENTITY == ID_GPS)
 #undef NODE_TYPE
 #define NODE_TYPE           NODE_TYPE_STA_ONLY
 #endif

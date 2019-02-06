@@ -13,7 +13,7 @@ extern Task reaction_task;
 void gotChangedConnectionCallback() { // REQUIRED
 }
 void gotMessageCallback(uint32_t from, String & msg) { // REQUIRED
-  // Serial.println(msg);
+  Serial.println(msg);
   // is it for me?
   int receipent = msg.substring(1, 7).toInt();
   if (receipent == IDENTITY) {
