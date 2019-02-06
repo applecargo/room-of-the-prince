@@ -133,9 +133,9 @@ void gps_reader() {
 
     // regular report about the planet
     if (has_fix) {
-      sprintf(msg_cstr, "[%06d:%03d] To everyone: Now, our planet is at. (%f, %f) on time of %s", ID_EVERYONE, GPS_PLANETARY_ANNOUNCEMENT, latitude, longitude, datetime.c_str());
+      sprintf(msg_cstr, "[%06d:%03d] To everyone: Now, our planet is at. (%f, %f) on time of %s", ID_EVERYONE, GPS_WORD_PLANETARY_ANNOUNCEMENT, latitude, longitude, datetime.c_str());
     } else {
-      sprintf(msg_cstr, "[%06d:%03d] To everyone: Now, our planet is floating in the universe. on time of %s", ID_EVERYONE, GPS_PLANETARY_ANNOUNCEMENT, datetime.c_str());
+      sprintf(msg_cstr, "[%06d:%03d] To everyone: Now, our planet is floating in the universe. on time of %s", ID_EVERYONE, GPS_WORD_PLANETARY_ANNOUNCEMENT, datetime.c_str());
     }
     msg = String(msg_cstr);
     mesh.sendBroadcast(msg);

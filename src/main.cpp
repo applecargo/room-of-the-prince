@@ -51,6 +51,9 @@
 #elif (IDENTITY == ID_GPS)
 #include "../members/gps.cpp"
 //
+#elif (IDENTITY == ID_DOOR)
+#include "../members/door.cpp"
+//
 #endif
 
 // painless mesh
