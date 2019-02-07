@@ -48,6 +48,18 @@
 #elif (IDENTITY == ID_MIRROR)
 #include "../members/mirror.cpp"
 //
+#elif (IDENTITY == ID_PEAK)
+#include "../members/peak.cpp"
+//
+#elif (IDENTITY == ID_BELL)
+#include "../members/bell.cpp"
+//
+#elif (IDENTITY == ID_FLOAT)
+#include "../members/float.cpp"
+//
+#elif (IDENTITY == ID_HEATER)
+#include "../members/heater.cpp"
+//
 #elif (IDENTITY == ID_GPS)
 #include "../members/gps.cpp"
 //

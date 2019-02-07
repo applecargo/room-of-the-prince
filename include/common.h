@@ -14,9 +14,13 @@
 #define ID_FUR           (0x1D00 + 0xA0)
 #define ID_KEYHOLDER     (0x1D00 + 0xB0)
 #define ID_MIRROR        (0x1D00 + 0xC0)
-//
-#define ID_GPS           (0x1E00 + 0x01)
-#define ID_DOOR          (0x1E00 + 0x02)
+#define ID_PEAK          (0x1D00 + 0xD0)
+#define ID_BELL          (0x1D00 + 0xE0)
+#define ID_FLOAT         (0x1D00 + 0xF0)
+#define ID_HEATER        (0x1E00 + 0x00)
+#define ID_GPS           (0x1E00 + 0x10)
+#define ID_DOOR          (0x1E00 + 0x20)
+#define ID_HANGER        (0x1E00 + 0x30)
 
 //
 #define ID_EVERYONE      (0x1F00 + 0x00)

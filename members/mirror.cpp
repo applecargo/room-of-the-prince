@@ -1,10 +1,10 @@
 // servo
 #include <Servo.h>
 static Servo myservo1;
-//static Servo myservo2;
+static Servo myservo2;
 static int angle = 0;
 
-#define REST_TIME   15
+#define REST_TIME   25
 
 // my tasks
 extern Task base_task;
@@ -67,9 +67,11 @@ void greeting() {
 }
 Task saying_greeting(2000, TASK_FOREVER, &greeting);
 
+//
 void movingup() {
   angle++;
   myservo1.write(angle);
+  myservo2.write(angle);
   Serial.print("moving, moving");
   Serial.println(angle);
   if (angle < 180) {
@@ -83,7 +85,7 @@ Task movingup_task(0, TASK_ONCE, &movingup);
 void movingdown() {
   angle--;
   myservo1.write(angle);
-  //
+  myservo2.write(angle);
   Serial.print("move move");
   Serial.println(angle);
   if (angle > 0) {
@@ -97,6 +99,7 @@ Task movingdown_task(0, TASK_ONCE, &movingdown);
 void base() {
   angle = 0;
   myservo1.write(angle);
+  myservo2.write(angle);
 }
 Task base_task(0, TASK_ONCE, &base);
 
@@ -105,8 +108,7 @@ void setup_member() {
 
   //servo
   myservo1.attach(D6);
-  //myservo2.attach(D7);
-  //myservo3.attach(D8);
+  myservo2.attach(D7);
 
   //tasks
   runner.addTask(saying_greeting);

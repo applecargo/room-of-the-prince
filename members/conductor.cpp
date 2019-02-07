@@ -35,50 +35,104 @@ void greeting() {
 }
 Task saying_greeting(1000, TASK_FOREVER, &greeting);
 
+//
+void compose_send_display_msg()
+{
+  //
+  static int states = 0;
+  static String msg = "";
+
+  // compose the message and send!
+  switch(states) {
+  case 0:
+    sprintf(msg_cstr, "[%06d:%03d] To lookat: look around now!", ID_LOOK_AT, LOOKAT_WORD_LOOK_AROUND);
+    break;
+  case 1:
+    sprintf(msg_cstr, "[%06d:%03d] To thunder: go rrrrrrrrr now!", ID_THUNDER, THUNDER_WORD_RRRRR);
+    break;
+  case 2:
+    sprintf(msg_cstr, "[%06d:%03d] To bag: handle up now!", ID_BAG, BAG_WORD_HANDLE_UP);
+    break;
+  case 3:
+    sprintf(msg_cstr, "[%06d:%03d] To bag: handle down now!", ID_BAG, BAG_WORD_HANDLE_DOWN);
+    break;
+  case 4:
+    sprintf(msg_cstr, "[%06d:%03d] To bag: sing now!", ID_BAG, BAG_WORD_SING);
+    break;
+  case 5:
+    sprintf(msg_cstr, "[%06d:%03d] To harmonica: harmonica time! ha-mororo~~", ID_HARMONICA, HARMONICA_WORD_PLAY_START);
+    break;
+  case 6:
+    sprintf(msg_cstr, "[%06d:%03d] To fur: speak out now!", ID_FUR, FUR_WORD_SING);
+    break;
+  case 7:
+    sprintf(msg_cstr, "[%06d:%03d] To keyholder: now falling falling!", ID_KEYHOLDER, KEYHOLDER_WORD_FALLING_KEYS);
+    break;
+  case 8:
+    sprintf(msg_cstr, "[%06d:%03d] To mirror: show me, please!", ID_MIRROR, MIRROR_WORD_IWILLSHOWYOU);
+    break;
+  case 9:
+    sprintf(msg_cstr, "[%06d:%03d] To peak: signal signal!", ID_PEAK, PEAK_WORD_PPI_PPI_PPI);
+    break;
+  case 10:
+    sprintf(msg_cstr, "[%06d:%03d] To bell: ring your bell!", ID_BELL, BELL_WORD_RING_RING_RING);
+    break;
+  case 11:
+    sprintf(msg_cstr, "[%06d:%03d] To float: turn turn and float!", ID_FLOAT, FLOAT_WORD_TURN_TURN);
+    break;
+  case 12:
+    sprintf(msg_cstr, "[%06d:%03d] To heater: again noisy?!", ID_HEATER, HEATER_WORD_NOISY_NOISY );
+    break;
+  // case 13:
+  //   sprintf(msg_cstr, "[%06d:%03d] To bag: handle up now!", ID_BAG, BAG_WORD_HANDLE_UP);
+  //   break;
+  // case 14:
+  //   sprintf(msg_cstr, "[%06d:%03d] To bag: handle up now!", ID_BAG, BAG_WORD_HANDLE_UP);
+  //   break;
+  // case 15:
+  //   sprintf(msg_cstr, "[%06d:%03d] To bag: handle up now!", ID_BAG, BAG_WORD_HANDLE_UP);
+  //   break;
+  default:
+    ; // undefined
+  }
+  //
+  states++;
+  if (states == 13) {
+    states = 0;
+  }
+  //
+  msg = String(msg_cstr);
+  mesh.sendBroadcast(msg);
+  // also show to the display
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0, 0);
+  display.println(msg_cstr);
+  display.display();
+}
+
 // button
-static int states = 0;
 void button() {
   static int button_prev = HIGH;
-  static String msg = "";
   //
   int button = digitalRead(D6);
   if (button != button_prev && button == LOW) {
     Serial.println("oh! the button triggers!");
-    // compose the message and send!
-    //sprintf(msg_cstr, "[%06d:%03d] To lookat: look around now!", ID_LOOK_AT, LOOKAT_WORD_LOOK_AROUND);
-    //sprintf(msg_cstr, "[%06d:%03d] To thunder: go rrrrrrrrr now!", ID_THUNDER, THUNDER_WORD_RRRRR);
-    // if (states == 0) {
-    //   sprintf(msg_cstr, "[%06d:%03d] To bag: handle up now!", ID_BAG, BAG_WORD_HANDLE_UP);
-    // } else if (states == 1) {
-    //   sprintf(msg_cstr, "[%06d:%03d] To bag: handle down now!", ID_BAG, BAG_WORD_HANDLE_DOWN);
-    // } else if (states == 2) {
-    //   sprintf(msg_cstr, "[%06d:%03d] To bag: sing now!", ID_BAG, BAG_WORD_SING);
-    // }
-    // states++;
-    // if (states == 3) {
-    //   states = 0;
-    // }
-    sprintf(msg_cstr, "[%06d:%03d] To harmonica: harmonica time! ha-mororo~~", ID_HARMONICA, HARMONICA_WORD_PLAY_START);
-    sprintf(msg_cstr, "[%06d:%03d] To fur: speak out now!", ID_FUR, FUR_WORD_SING);
-    sprintf(msg_cstr, "[%06d:%03d] To keyholder: now falling falling!", ID_KEYHOLDER, KEYHOLDER_WORD_FALLING_KEYS);
-    sprintf(msg_cstr, "[%06d:%03d] To mirror: show me, please!", ID_MIRROR, MIRROR_WORD_IWILLSHOWYOU);
-
-    msg = String(msg_cstr);
-    mesh.sendBroadcast(msg);
-    // also show to the display
-    display.clearDisplay();
-    display.setTextSize(1);
-    display.setTextColor(WHITE);
-    display.setCursor(0, 0);
-    display.println("now, i ve sent..");
-    display.println(msg_cstr);
-    display.display();
+    compose_send_display_msg();
   }
   //
   button_prev = button;
 }
 //the task
 Task button_task(20, TASK_FOREVER, &button);
+
+//looping events
+void words_looping() {
+  //
+  compose_send_display_msg();
+}
+Task words_looping_task(10000, TASK_FOREVER, &words_looping);
 
 //setup_member
 void setup_member() {
@@ -106,6 +160,9 @@ void setup_member() {
   //
   runner.addTask(button_task);
   button_task.enable();
+  //
+  runner.addTask(words_looping_task);
+  words_looping_task.enable();
   //
   runner.addTask(reaction_task);
 }
