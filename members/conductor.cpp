@@ -29,11 +29,12 @@ Task reaction_task(10, 16, &reaction);
 
 // saying hello
 void greeting() {
-  static String greeting = "An-nyung, nan na-da. Nae-mal jal duel-oe!";
-  String greeting_r = greeting.substring(0, random(1, greeting.length()));
-  mesh.sendBroadcast(greeting_r);
+  static String msg = "";
+  sprintf(msg_cstr, "[%06d:%03d]", ID_EVERYONE, CONDUCTOR_WORD_HELLO); //"An-nyung, nan na-da. Nae-mal jal duel-oe!"
+  msg = String(msg_cstr);
+  mesh.sendBroadcast(msg);
 }
-Task saying_greeting(1000, TASK_FOREVER, &greeting);
+Task saying_greeting(10000, TASK_FOREVER, &greeting);
 
 //
 void compose_send_display_msg()
@@ -47,9 +48,9 @@ void compose_send_display_msg()
   case 0:
     sprintf(msg_cstr, "[%06d:%03d] To lookat: look around now!", ID_LOOK_AT, LOOKAT_WORD_LOOK_AROUND);
     break;
-  case 1:
-    sprintf(msg_cstr, "[%06d:%03d] To thunder: go rrrrrrrrr now!", ID_THUNDER, THUNDER_WORD_RRRRR);
-    break;
+  // case 1:
+  //   sprintf(msg_cstr, "[%06d:%03d] To thunder: go rrrrrrrrr now!", ID_THUNDER, THUNDER_WORD_RRRRR);
+  //   break;
   case 2:
     sprintf(msg_cstr, "[%06d:%03d] To bag: handle up now!", ID_BAG, BAG_WORD_HANDLE_UP);
     break;
@@ -83,9 +84,9 @@ void compose_send_display_msg()
   case 12:
     sprintf(msg_cstr, "[%06d:%03d] To heater: again noisy?!", ID_HEATER, HEATER_WORD_NOISY_NOISY );
     break;
-  // case 13:
-  //   sprintf(msg_cstr, "[%06d:%03d] To bag: handle up now!", ID_BAG, BAG_WORD_HANDLE_UP);
-  //   break;
+  case 13:
+    sprintf(msg_cstr, "[%06d:%03d] To rocking: time to rock!!", ID_ROCKING, ROCKING_WORD_ROCK_ROCK_ROCK);
+    break;
   // case 14:
   //   sprintf(msg_cstr, "[%06d:%03d] To bag: handle up now!", ID_BAG, BAG_WORD_HANDLE_UP);
   //   break;
@@ -97,7 +98,7 @@ void compose_send_display_msg()
   }
   //
   states++;
-  if (states == 13) {
+  if (states == 14) {
     states = 0;
   }
   //

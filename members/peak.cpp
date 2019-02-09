@@ -58,19 +58,18 @@ Task reaction_task(10, 16, &reaction);
 
 // saying hello
 void greeting() {
-  static String greeting = "signal out~ take my signal~~ to every";
-  String greeting_r = greeting.substring(0, random(1, greeting.length()));
-  mesh.sendBroadcast(greeting_r);
+  static String msg = "";
+  sprintf(msg_cstr, "[%06d:%03d]", ID_EVERYONE, PEAK_WORD_HELLO); //"Duncan. Living in the triangularities."
+  msg = String(msg_cstr);
+  mesh.sendBroadcast(msg);
 }
-Task saying_greeting(1000, TASK_FOREVER, &greeting);
-
+Task saying_greeting(10000, TASK_FOREVER, &greeting);
 
 // sing!
-
 void signal() {
 
-// "P#SSS@AAAA" - P: P (play), SSS: song #, A: amp. (x 1000)
-// "SXXXXXXXXX" - S: S (stop)
+  // "P#SSS@AAAA" - P: P (play), SSS: song #, A: amp. (x 1000)
+  // "SXXXXXXXXX" - S: S (stop)
 
   sprintf(cmdstr, "P#%03d@%04d", 1, 1000); // play song #1, with amplitude == 1.0
   Wire.beginTransmission(I2C_ADDR);

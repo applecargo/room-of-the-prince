@@ -21,11 +21,12 @@
 #define ID_GPS           (0x1E00 + 0x10)
 #define ID_DOOR          (0x1E00 + 0x20)
 #define ID_HANGER        (0x1E00 + 0x30)
+#define ID_TUNER         (0x1E00 + 0x40)
 
 //
 #define ID_EVERYONE      (0x1F00 + 0x00)
 //(choice)
-#define IDENTITY         ID_DOOR
+#define IDENTITY         ID_FUR
 
 //
 #include <Arduino.h>

@@ -51,11 +51,12 @@ Task reaction_task(10, 16, &reaction);
 
 // saying hello
 void greeting() {
-  static String greeting = "1000 1010 0010 1111 1010 1010 IoIo.";
-  String greeting_r = greeting.substring(0, random(1, greeting.length()));
-  mesh.sendBroadcast(greeting_r);
+  static String msg = "";
+  sprintf(msg_cstr, "[%06d:%03d]", ID_EVERYONE, GPS_WORD_HELLO); //"1000 1010 0010 1111 1010 1010 IoIo."
+  msg = String(msg_cstr);
+  mesh.sendBroadcast(msg);
 }
-Task saying_greeting(1000, TASK_FOREVER, &greeting);
+Task saying_greeting(10000, TASK_FOREVER, &greeting);
 
 // gps
 void gps_reader() {
@@ -143,7 +144,7 @@ void gps_reader() {
     Serial.println(msg_cstr);
   }
 }
-Task gps_reader_task(1000, TASK_FOREVER, &gps_reader);
+Task gps_reader_task(20000, TASK_FOREVER, &gps_reader);
 
 //setup_member
 void setup_member() {

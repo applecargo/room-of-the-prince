@@ -73,11 +73,12 @@ Task reaction_task(10, 16, &reaction);
 
 // saying hello
 void greeting() {
-  static String greeting = "Sir! 9 of the 10!";
-  String greeting_r = greeting.substring(0, random(1, greeting.length()));
-  mesh.sendBroadcast(greeting_r);
+  static String msg = "";
+  sprintf(msg_cstr, "[%06d:%03d]", ID_EVERYONE, BAG_WORD_HELLO); //"Sir! 9 of the 10!"
+  msg = String(msg_cstr);
+  mesh.sendBroadcast(msg);
 }
-Task saying_greeting(1000, TASK_FOREVER, &greeting);
+Task saying_greeting(10000, TASK_FOREVER, &greeting);
 
 // handle up
 void handle_up() {

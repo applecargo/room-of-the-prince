@@ -5,12 +5,8 @@
 // servo
 #include <Servo.h>
 
-
-
 // my tasks
-
 extern Task sing_task;
-
 
 // room protocol
 static int message = 0;
@@ -30,9 +26,8 @@ void gotMessageCallback(uint32_t from, String & msg) { // REQUIRED
     // so, what to do, then?
     switch (message)
     {
-
     case FUR_WORD_SING:
-      Serial.println("bag: speak out, now!");
+      Serial.println("fur: khcuk huk, kch!");
       sing_task.restartDelayed(500);
       break;
     default:
@@ -62,11 +57,12 @@ Task reaction_task(10, 16, &reaction);
 
 // saying hello
 void greeting() {
-  static String greeting = "kuhhhkuhhhuuu";
-  String greeting_r = greeting.substring(0, random(1, greeting.length()));
-  mesh.sendBroadcast(greeting_r);
+  static String msg = "";
+  sprintf(msg_cstr, "[%06d:%03d]", ID_EVERYONE, FUR_WORD_HELLO); //"(kuhhhkuhhhuuu)"
+  msg = String(msg_cstr);
+  mesh.sendBroadcast(msg);
 }
-Task saying_greeting(1000, TASK_FOREVER, &greeting);
+Task saying_greeting(10000, TASK_FOREVER, &greeting);
 
 void sing() {
 

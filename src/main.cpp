@@ -66,6 +66,9 @@
 #elif (IDENTITY == ID_DOOR)
 #include "../members/door.cpp"
 //
+#elif (IDENTITY == ID_TUNER)
+#include "../members/tuner.cpp"
+//
 #endif
 
 // painless mesh

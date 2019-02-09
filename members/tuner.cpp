@@ -1,6 +1,11 @@
 // my tasks
-extern Task motion_task;
+extern Task tune_task;
 extern Task saying_greeting;
+
+//tunes
+#define TUNE_EXACT 0
+#define TUNE_HIGH  1
+#define TUNE_LOW   2
 
 // room protocol
 static int message = 0;
@@ -37,10 +42,10 @@ void reaction() {
     count = 0;
   }
   if ((message & mask) == 0) {
-    digitalWrite(D7, HIGH);
+    // digitalWrite(D7, HIGH);
   }
   else {
-    digitalWrite(D7, LOW);
+    // digitalWrite(D7, LOW);
   }
   mask = mask >> 1;
   count++;
@@ -50,56 +55,64 @@ Task reaction_task(10, 16, &reaction);
 // saying hello
 void greeting() {
   static String msg = "";
-  sprintf(msg_cstr, "[%06d:%03d]", ID_EVERYONE, MOTION_WORD_HELLO); //"Hello? My name is.. Mother Detroit."
+  sprintf(msg_cstr, "[%06d:%03d]", ID_EVERYONE, TUNER_WORD_HELLO); //"I am Tuba Carlos. Don't worry to much about tones. Just let it go. Chill-out~"
   msg = String(msg_cstr);
   mesh.sendBroadcast(msg);
 }
 Task saying_greeting(10000, TASK_FOREVER, &greeting);
 
-// motion detection
-void motion() {
-  static bool motion_prev = false;
+// tune detection
+void tune() {
+  static int level = TUNE_EXACT;
+  static int level_prev = TUNE_EXACT;
   static String msg = "";
-  bool motion = (digitalRead(D1) == HIGH);
-  if (motion_prev != motion) {
-    if (motion == true) {
-      // Serial.println("motion start.");
-      sprintf(msg_cstr, "[%06d:%03d] To everyone: Hey, something is moving now!", ID_EVERYONE, MOTION_WORD_MOTION_START);
+  //
+  level = TUNE_EXACT;
+  if (digitalRead(D5) == HIGH) level = TUNE_HIGH;
+  if (digitalRead(D6) == HIGH) level = TUNE_LOW;
+  //
+  if (level_prev != level) {
+    if (level == TUNE_EXACT) {
+      Serial.println("the tune is perfect!");
+      sprintf(msg_cstr, "[%06d:%03d] To everyone: one strike!", ID_EVERYONE, TUNER_WORD_THIS_IS_CORRECT);
       msg = String(msg_cstr);
       mesh.sendBroadcast(msg);
       //
-      sprintf(msg_cstr, "[%06d:%03d] To lookat: look around now!", ID_LOOK_AT, LOOKAT_WORD_LOOK_AROUND);
-      msg = String(msg_cstr);
-      mesh.sendBroadcast(msg);
-      //
-      sprintf(msg_cstr, "[%06d:%03d] To rocking: rocking? also?", ID_ROCKING, ROCKING_WORD_ROCK_ROCK_ROCK);
-      msg = String(msg_cstr);
-      mesh.sendBroadcast(msg);
-      //
-      message = MOTION_WORD_MOTION_START;
+      message = TUNER_WORD_THIS_IS_CORRECT;
       reaction_task.restart();
-    } else {
-      // Serial.println("motion stop.");
-      sprintf(msg_cstr, "[%06d:%03d] To everyone: Uhm, my world is tran·quilo.", ID_EVERYONE, MOTION_WORD_MOTION_END);
+    } else if (level == TUNE_LOW) {
+      Serial.println("the tune is a bit low_____...");
+      sprintf(msg_cstr, "[%06d:%03d] To everyone: one low ball!", ID_EVERYONE, TUNER_WORD_THIS_IS_LOW);
       msg = String(msg_cstr);
       mesh.sendBroadcast(msg);
       //
-      message = MOTION_WORD_MOTION_END;
+      message = TUNER_WORD_THIS_IS_LOW;
+      reaction_task.restart();
+    } else if (level == TUNE_HIGH) {
+      Serial.println("the tune is a bit high!!...");
+      sprintf(msg_cstr, "[%06d:%03d] To everyone: one high ball!", ID_EVERYONE, TUNER_WORD_THIS_IS_HIGH);
+      msg = String(msg_cstr);
+      mesh.sendBroadcast(msg);
+      //
+      message = TUNER_WORD_THIS_IS_HIGH;
       reaction_task.restart();
     }
   }
-  motion_prev = motion;
+  level_prev = level;
 }
-Task motion_task(20, TASK_FOREVER, &motion);
+Task tune_task(20, TASK_FOREVER, &tune);
 
 //setup_member
 void setup_member() {
   //
+  pinMode(D5, INPUT);
+  pinMode(D6, INPUT);
+  //
   runner.addTask(saying_greeting);
   saying_greeting.enable();
   //
-  runner.addTask(motion_task);
-  motion_task.enable();
+  runner.addTask(tune_task);
+  tune_task.enable();
   //
   runner.addTask(reaction_task);
 }

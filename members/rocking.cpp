@@ -62,11 +62,12 @@ Task reaction_task(10, 16, &reaction);
 
 // saying hello
 void greeting() {
-  static String greeting = "ROCK is the spirit!";
-  String greeting_r = greeting.substring(0, random(1, greeting.length()));
-  mesh.sendBroadcast(greeting_r);
+  static String msg = "";
+  sprintf(msg_cstr, "[%06d:%03d]", ID_EVERYONE, ROCKING_WORD_HELLO); //"ROCK is the spirit!"
+  msg = String(msg_cstr);
+  mesh.sendBroadcast(msg);
 }
-Task saying_greeting(1000, TASK_FOREVER, &greeting);
+Task saying_greeting(10000, TASK_FOREVER, &greeting);
 
 void rocking() {
   static bool first = true;

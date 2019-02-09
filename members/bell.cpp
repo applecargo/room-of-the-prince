@@ -1,20 +1,21 @@
-// i2c
-#include <Wire.h>
-#include "fur/i2c_protocol.h"
-
 // servo
 #include <Servo.h>
 static Servo myservo;
 
+//
+#define HITTING_ANGLE 87
+#define RELEASE_ANGLE 60
+#define STABILIZE_ANGLE 53
 
+//
+extern Task hit_task;
 
-extern Task standby_task;
-extern Task belling_task;
-extern Task rest_task;
-
-#define STANDBY_ANGLE 60
-#define BELLING_ANGLE 87
-#define REST_ANGLE 70
+//
+extern Task pcontrol_task;
+bool pcontrol_new = false;
+int pcontrol_start = 0;
+int pcontrol_target = 0;
+int control_count = 0;
 
 // room protocol
 static int message = 0;
@@ -24,20 +25,14 @@ void gotChangedConnectionCallback() { // REQUIRED
 }
 void gotMessageCallback(uint32_t from, String & msg) { // REQUIRED
   Serial.println(msg);
-  // is it for me?
   int receipent = msg.substring(1, 7).toInt();
   if (receipent == IDENTITY) {
-    // what it says?
     message = msg.substring(8, 12).toInt();
-    // i ve heard. reaction.
     reaction_task.restart();
-    // so, what to do, then?
-    switch (message)
-    {
-
+    switch (message) {
     case BELL_WORD_RING_RING_RING:
-      Serial.println("bell: ring ring ");
-      belling_task.restartDelayed(100);
+      Serial.println("bell: ring ring.");
+      hit_task.restartDelayed(100);
       break;
     default:
       ;
@@ -66,61 +61,95 @@ Task reaction_task(10, 16, &reaction);
 
 // saying hello
 void greeting() {
-  static String greeting = "signal out~ take my signal~~ to every";
-  String greeting_r = greeting.substring(0, random(1, greeting.length()));
-  mesh.sendBroadcast(greeting_r);
+  static String msg = "";
+  sprintf(msg_cstr, "[%06d:%03d]", ID_EVERYONE, BELL_WORD_HELLO); //"signal out~ take my signal~~ to every~~"
+  msg = String(msg_cstr);
+  mesh.sendBroadcast(msg);
 }
-Task saying_greeting(1000, TASK_FOREVER, &greeting);
+Task saying_greeting(10000, TASK_FOREVER, &greeting);
 
-void belling() {
-  int angle = BELLING_ANGLE;
-  //
-  Serial.print("bell bell bell :");
-  Serial.print(angle);
-  Serial.println(" deg.");
-  //
-  myservo.write(angle);
-  standby_task.restartDelayed(100);
+// hit!
+void hit() {
+  if (hit_task.isFirstIteration()) {
+    //
+    myservo.write(HITTING_ANGLE);
+    //
+    Serial.print("bell, bell, bell! : ");
+    Serial.print(HITTING_ANGLE);
+    Serial.println(" deg.");
+    //
+  } else {
+    //
+    myservo.write(RELEASE_ANGLE);
+    //
+    Serial.print("release to .. : ");
+    Serial.print(RELEASE_ANGLE);
+    Serial.println(" deg.");
+    // start stablizing..
+    pcontrol_new = true;
+    pcontrol_start = RELEASE_ANGLE;
+    pcontrol_target = STABILIZE_ANGLE;
+    pcontrol_task.restartDelayed(80);
+    //
+    control_count = 0;
+  }
 }
-Task belling_task(0, TASK_ONCE, &belling);
+Task hit_task(100, 2, &hit);
 
-// handle down
-void standby() {
-  int angle = STANDBY_ANGLE;
+// pcontrol
+void pcontrol() {
+  static int angle;
+  if (pcontrol_new == true) {
+    pcontrol_new = false;
+    angle = pcontrol_start;
+  }
+  int error = pcontrol_target - angle;
+  int sign = (error >= 0 ? 1 : -1);
   //
-  Serial.print("no bell :");
-  Serial.print(angle);
-  Serial.println(" deg.");
+  Serial.print("step-by-step to.. : ");
+  Serial.println(sign);
   //
-  myservo.write(angle);
-  rest_task.restartDelayed(100);
+  if (error != 0) {
+    angle = angle + sign; // most gentle move : 1 step each time.
+    //
+    Serial.print("stablizing in action ==> next angle : ");
+    Serial.print(angle);
+    Serial.println(" deg.");
+    //
+    myservo.write(angle);
+    pcontrol_task.restartDelayed(300);
+  }
+  else {
+    // stand-by processes
+    if (control_count % 2 == 0) {
+      pcontrol_new = true;
+      pcontrol_start = STABILIZE_ANGLE;
+      pcontrol_target = RELEASE_ANGLE;
+      pcontrol_task.restartDelayed(300);
+    } else if (control_count % 2 == 1) {
+      pcontrol_new = true;
+      pcontrol_start = RELEASE_ANGLE;
+      pcontrol_target = STABILIZE_ANGLE;
+      pcontrol_task.restartDelayed(300);
+    }
+    //
+    control_count++;
+  }
 }
-Task standby_task(0, TASK_ONCE, &standby);
+Task pcontrol_task(0, TASK_ONCE, &pcontrol); // hit -> 100ms -> step back -> 50ms -> slowly move to rest pos.
 
-void rest() {
-  int angle = REST_ANGLE;
-  //
-  Serial.print("no bell :");
-  Serial.print(angle);
-  Serial.println(" deg.");
-  //
-  myservo.write(angle);
-}
-Task rest_task(0, TASK_ONCE, &rest);
-
-
+//
 void setup_member() {
-  //i2c master
-  Wire.begin();
+  //servo
   myservo.attach(D6);
 
+  //
   runner.addTask(saying_greeting);
   saying_greeting.enable();
-
-  runner.addTask(belling_task);
-  runner.addTask(standby_task);
   runner.addTask(reaction_task);
-  runner.addTask(rest_task);
 
-  rest_task.restartDelayed(500);
+  runner.addTask(hit_task);
+  runner.addTask(pcontrol_task);
+
+  hit_task.restart();
 }

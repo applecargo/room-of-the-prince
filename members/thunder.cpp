@@ -5,6 +5,7 @@
 // my tasks
 extern Task rrrrr_task;
 extern Task saying_greeting;
+bool rrrrr_new = false;
 
 // room protocol
 static int message = 0;
@@ -26,6 +27,7 @@ void gotMessageCallback(uint32_t from, String & msg) { // REQUIRED
     {
     case THUNDER_WORD_RRRRR:
       Serial.println("thunder: here we go! rrrrrrrrrrrr!");
+      rrrrr_new = true;
       rrrrr_task.restartDelayed(2000);
       break;
     default:
@@ -61,23 +63,23 @@ Task reaction_task(10, 16, &reaction);
 
 // saying hello
 void greeting() {
-  static String greeting = "Hello? I do rrrrrrrrrrrr!";
-  String greeting_r = greeting.substring(0, random(1, greeting.length()));
-  mesh.sendBroadcast(greeting_r);
+  static String msg = "";
+  sprintf(msg_cstr, "[%06d:%03d]", ID_EVERYONE, THUNDER_WORD_HELLO); //"Hello? I do rrrrrrrrrrrr!"
+  msg = String(msg_cstr);
+  mesh.sendBroadcast(msg);
 }
-Task saying_greeting(1000, TASK_FOREVER, &greeting);
+Task saying_greeting(10000, TASK_FOREVER, &greeting);
 
 // make rrrrr noise
 void rrrrr() {
   static int rrrrr_freq = 5;
   static int rrrrr_amp = 100;
   static int rrrrr_count = 0;
-  if (rrrrr_task.isFirstIteration()) {
-    rrrrr_freq = 5;
+  if (rrrrr_new == true) {
     rrrrr_count = 0;
   }
-  //switch(random(5))
-  switch(rrrrr_count)
+  switch(random(5))
+  // switch(rrrrr_count)
   {
   case 0:
     rrrrr_freq = 5;
@@ -107,7 +109,7 @@ void rrrrr() {
     Serial.print("r");
   }
   Serial.println("!");
-  if (rrrrr_task.isLastIteration()) {
+  if (rrrrr_count == 60) {
     sprintf(cmdstr, "F%04dA%04d", 0, 1000);
     Wire.beginTransmission(I2C_ADDR);
     Wire.write(cmdstr, CMD_LENGTH);
@@ -117,11 +119,13 @@ void rrrrr() {
     Wire.beginTransmission(I2C_ADDR);
     Wire.write(cmdstr, CMD_LENGTH);
     Wire.endTransmission();
+    //
+    rrrrr_task.restartDelayed(random(100, 1000));
   }
   //
   rrrrr_count++;
 }
-Task rrrrr_task(3500, 6, &rrrrr);
+Task rrrrr_task(0, TASK_ONCE, &rrrrr);
 
 //setup_member
 void setup_member() {
@@ -132,5 +136,6 @@ void setup_member() {
   runner.addTask(saying_greeting);
   saying_greeting.enable();
   runner.addTask(rrrrr_task);
+  rrrrr_task.restart();
   runner.addTask(reaction_task);
 }
