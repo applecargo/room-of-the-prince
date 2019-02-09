@@ -79,10 +79,12 @@ Scheduler runner;
 
 //task #0 : connection indicator
 bool onFlag = false;
+bool isConnected = false;
 //prototypes
 void taskStatusBlink_steadyOn();
 void taskStatusBlink_slowblink_insync();
 void taskStatusBlink_fastblink();
+void taskStatusBlink_steadyOff();
 //the task
 Task statusblinks(0, 1, &taskStatusBlink_steadyOn); // at start, steady on. default == disabled. ==> setup() will enable.
 // when disconnected, steadyon.
@@ -108,6 +110,34 @@ void taskStatusBlink_slowblink_insync() {
 }
 void taskStatusBlink_fastblink() {
 }
+// when connected, steadyoff. (?)
+void taskStatusBlink_steadyOff() {
+  onFlag = false;
+}
+
+// happy or lonely
+//   --> automatic reset after some time of 'loneliness (disconnected from any node)'
+void nothappyalone() {
+  static bool isConnected_prev = false;
+  static unsigned long lonely_time_start = 0;
+  // oh.. i m lost the signal(==connection)
+  if (isConnected_prev != isConnected && isConnected == false) {
+    lonely_time_start = millis();
+    Serial.println("oh.. i m lost!");
+  }
+  // .... how long we've been lonely?
+  if (isConnected == false) {
+    if (millis() - lonely_time_start > LONELY_TO_DIE) {
+      // okay. i m fed up. bye the world.
+      Serial.println("okay. i m fed up. bye the world.");
+      Serial.println();
+      ESP.reset();
+    }
+  }
+  //
+  isConnected_prev = isConnected;
+}
+Task nothappyalone_task(1000, TASK_FOREVER, &nothappyalone, &runner, true); // by default, ENABLED.
 
 // mesh callbacks
 void receivedCallback(uint32_t from, String & msg) { // REQUIRED
@@ -119,14 +149,19 @@ void changedConnectionCallback() {
   if (mesh.getNodeList().size() > 0) {
     // (still) connected.
     onFlag = false; //reset flag stat.
-    statusblinks.set(LED_PERIOD, 2, &taskStatusBlink_slowblink_insync);
+    // statusblinks.set(LED_PERIOD, 2, &taskStatusBlink_slowblink_insync);
+    statusblinks.set(0, 1, &taskStatusBlink_steadyOff);
     statusblinks.enable();
     Serial.println("connected!");
+    //
+    isConnected = true;
   }
   else {
     // disconnected!!
     statusblinks.set(0, 1, &taskStatusBlink_steadyOn);
     statusblinks.enable();
+    //
+    isConnected = false;
   }
   // let the member device know.
   gotChangedConnectionCallback();

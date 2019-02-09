@@ -29,6 +29,9 @@
 #define IDENTITY         ID_FUR
 
 //
+#define LONELY_TO_DIE    (30000)
+
+//
 #include <Arduino.h>
 
 //
