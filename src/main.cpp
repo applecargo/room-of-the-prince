@@ -149,8 +149,8 @@ void changedConnectionCallback() {
   if (mesh.getNodeList().size() > 0) {
     // (still) connected.
     onFlag = false; //reset flag stat.
-    // statusblinks.set(LED_PERIOD, 2, &taskStatusBlink_slowblink_insync);
-    statusblinks.set(0, 1, &taskStatusBlink_steadyOff);
+    statusblinks.set(LED_PERIOD, 2, &taskStatusBlink_slowblink_insync);
+    // statusblinks.set(0, 1, &taskStatusBlink_steadyOff);
     statusblinks.enable();
     Serial.println("connected!");
     //
