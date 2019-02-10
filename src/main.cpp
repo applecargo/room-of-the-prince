@@ -69,6 +69,9 @@
 #elif (IDENTITY == ID_TUNER)
 #include "../members/tuner.cpp"
 //
+#elif (IDENTITY == ID_HANGER)
+#include "../members/hanger.cpp"
+//
 #endif
 
 // painless mesh
@@ -181,8 +184,8 @@ void setup() {
   system_phy_set_max_tpw(0);
   node_type = WIFI_STA;
 #endif
-  mesh.setDebugMsgTypes(ERROR | DEBUG | CONNECTION);
-  // mesh.setDebugMsgTypes( ERROR | STARTUP );
+  // mesh.setDebugMsgTypes(ERROR | DEBUG | CONNECTION);
+  mesh.setDebugMsgTypes( ERROR | STARTUP );
   mesh.init(MESH_SSID, MESH_PASSWORD, &runner, MESH_PORT, node_type, MESH_CHANNEL);
 
   //

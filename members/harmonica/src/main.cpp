@@ -68,6 +68,7 @@ static int notes[SCORE_COUNT][SCORE_NOTE_MAX][2] = { //unit: (steps, millisec)
 #include <TaskScheduler.h>
 Scheduler runner;
 extern Task music_player_stepping_task;
+extern Task music_player_random_steps_task;
 extern Task music_player_stop_task;
 extern Task music_player_step_monitor_task; // DEBUG
 bool is_music_time = false;
@@ -129,6 +130,64 @@ void music_player_stepping() {
 }
 Task music_player_stepping_task(0, TASK_ONCE, music_player_stepping);
 
+void music_player_random_steps() {
+  //
+  if (stepper.distanceToGo() == 0 && is_music_time == true) {
+    //
+    digitalWrite(RELAY_PIN, HIGH); // blow start! (and continue.)
+    //
+    float cur_step = stepper.currentPosition();
+    float target_step = random(0, 1800);
+    float steps = target_step - cur_step;
+    // float dur = (steps / STEPS_PER_SEC_MAX * 1000) + random(0, 3000); // min. req. time + alpha..
+    float dur = random(2000, 3000);
+    float velocity = steps / dur * 1000; // unit conv.: (steps/msec) --> (steps/sec)
+    float speed = fabs(velocity);
+    //
+    if (speed > STEPS_PER_SEC_MAX) {
+      Serial.println("oh.. isn't it TOO FAST??");
+    } else {
+      Serial.println("okay. i go now.");
+    }
+
+    //DEBUG
+    Serial.print(" --> note_idx : "); Serial.println(note_idx);
+    Serial.print(" --> dur : "); Serial.println(dur);
+    Serial.print(" --> cur_step : "); Serial.println(cur_step);
+    Serial.print(" --> target_step : "); Serial.println(target_step);
+    Serial.print(" --> steps : "); Serial.println(steps);
+    Serial.print(" --> velocity(steps/sec) : "); Serial.println(velocity);
+    Serial.print(" --> speed(steps/sec) : "); Serial.println(speed);
+    // Serial.print(" --> speed(rpm) : "); Serial.println(speed * STEPS_PER_SEC_TO_RPM);
+    Serial.print(" --> STEPS_PER_SEC_MAX(steps/sec) : "); Serial.println(STEPS_PER_SEC_MAX);
+
+    //
+    stepper.moveTo(target_step);
+    stepper.setSpeed(velocity);
+    //NOTE: 'setSpeed' should come LATER than 'moveTo'!
+    //  --> 'moveTo' re-calculate the velocity.
+    //  --> so we need to re-override it.
+    //
+    note_idx++;
+    //
+    if (note_idx >= SCORE_NOTE_MAX) { //the last note of the song.
+      // ok. i'm done. schedule a stopping task!
+      music_player_stop_task.restartDelayed(dur);
+      // rewind the reel.
+      note_idx = 0;
+    } else {
+      // reschedule myself..
+      music_player_random_steps_task.restartDelayed(dur);
+    }
+  } else {
+    // reschedule myself..
+    music_player_random_steps_task.restartDelayed(50);
+    //
+    // Serial.println("stepper BUSY! will wait a bit.");
+  }
+}
+Task music_player_random_steps_task(0, TASK_ONCE, music_player_random_steps);
+
 //
 void music_player_stop() {
   if (music_player_stop_task.isFirstIteration()) {
@@ -189,13 +248,17 @@ void receiveEvent(int numBytes) {
       if (score_cmd > 0) {
         score_now = score_cmd - 1;
         if (score_now < SCORE_COUNT) {
-          is_music_time = true;
-          music_player_stepping_task.restart();
+          if (is_music_time == false && stepper.currentPosition() == 0) { // block re-trigger.
+            is_music_time = true;
+            music_player_stepping_task.restart();
+          }
         }
       } else {
         // start a random player.
-        is_music_time = true;
-        // music_player_random_steps_task.restart();
+        if (is_music_time == false && stepper.currentPosition() == 0) { // block re-trigger.
+          is_music_time = true;
+          music_player_random_steps_task.restart();
+        }
       }
       //
     } else if (first == 'S') {
@@ -241,6 +304,7 @@ void setup() {
   //tasks
   runner.init();
   runner.addTask(music_player_stepping_task);
+  runner.addTask(music_player_random_steps_task);
   runner.addTask(music_player_stop_task);
 
   //DEBUG

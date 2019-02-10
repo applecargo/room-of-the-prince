@@ -36,8 +36,7 @@
 #define CONDUCTOR_WORD_HELLO         (ID_CONDUCTOR + 0x00)
 
 #define DISTANCE_WORD_HELLO          (ID_DISTANCE + 0x00)
-#define DISTANCE_WORD_ARRIVED        (ID_DISTANCE + 0x01)
-#define DISTANCE_WORD_LEFT           (ID_DISTANCE + 0x02)
+#define DISTANCE_WORD_PRINCE_ACTIVE  (ID_DISTANCE + 0x01)
 
 #define GPS_WORD_HELLO                    (ID_GPS + 0x00)
 #define GPS_WORD_PLANETARY_ANNOUNCEMENT   (ID_GPS + 0x01)
@@ -61,6 +60,7 @@
 
 #define THUNDER_WORD_HELLO           (ID_THUNDER + 0x00)
 #define THUNDER_WORD_RRRRR           (ID_THUNDER + 0x01)
+#define THUNDER_WORD_LEFT            (ID_THUNDER + 0x02)
 
 #define ROCKING_WORD_HELLO           (ID_ROCKING + 0x00)
 #define ROCKING_WORD_ROCK_ROCK_ROCK  (ID_ROCKING + 0x01)
@@ -76,6 +76,9 @@
 
 #define FUR_WORD_HELLO               (ID_FUR + 0x00)
 #define FUR_WORD_SING                (ID_FUR + 0x01)
+
+#define HANGER_WORD_HELLO            (ID_HANGER + 0x00)
+#define HANGER_WORD_SING             (ID_HANGER + 0x01)
 
 #define KEYHOLDER_WORD_HELLO         (ID_KEYHOLDER + 0x00)
 #define KEYHOLDER_WORD_FALLING_KEYS  (ID_KEYHOLDER + 0x01)

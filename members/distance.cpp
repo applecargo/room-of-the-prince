@@ -61,6 +61,7 @@ Task saying_greeting(10000, TASK_FOREVER, &greeting);
 // distance
 void distance_reader() {
   static bool presence = false;
+  static bool presence_prev = false;
 
   //fetch cmdstr
   Wire.requestFrom(I2C_ADDR, CMD_LENGTH); //request cmdstr.
@@ -78,27 +79,20 @@ void distance_reader() {
     String str = msg.substring(1, 4); // 123
     int dist_cm = str.toInt();
 
-    if (presence == false && dist_cm > 50 && dist_cm < 150) {
-      // There was NONE. but, now, there is SOME.
-      presence = true;
-      // prince ARRIVED event.
-      sprintf(msg_cstr, "[%06d:%03d] To everyone: Now, he is.", ID_EVERYONE, DISTANCE_WORD_ARRIVED);
+    //
+    presence = (dist_cm > 80 && dist_cm < 300);
+
+    if (presence != presence_prev && presence == false) {
+      // someone passed under me.
+      sprintf(msg_cstr, "[%06d:%03d] To everyone: Now, prince is in ACTION!", ID_EVERYONE, DISTANCE_WORD_PRINCE_ACTIVE);
       msg = String(msg_cstr);
       mesh.sendBroadcast(msg);
       //
       Serial.println(msg_cstr);
     }
 
-    if (presence == true && (dist_cm < 50 || dist_cm > 150)) {
-      // There was SOME. but, now, there is NONE.
-      presence = false;
-      // prince LEFT event.
-      sprintf(msg_cstr, "[%06d:%03d] To everyone: Now, NOBODY.", ID_EVERYONE, DISTANCE_WORD_LEFT);
-      msg = String(msg_cstr);
-      mesh.sendBroadcast(msg);
-      //
-      Serial.println(msg_cstr);
-    }
+    //
+    presence_prev = presence;
   }
 }
 Task distance_task(300, TASK_FOREVER, &distance_reader);

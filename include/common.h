@@ -1,32 +1,33 @@
 #pragma once
 
 // member identity
-#define ID_CONDUCTOR     (0x1D00 + 0x00)
-#define ID_MOTION_SENSOR (0x1D00 + 0x10)
-#define ID_RELAY_CTRLER  (0x1D00 + 0x20)
-#define ID_POINT_MOTOR   (0x1D00 + 0x30)
-#define ID_LOOK_AT       (0x1D00 + 0x40)
-#define ID_THUNDER       (0x1D00 + 0x50)
-#define ID_ROCKING       (0x1D00 + 0x60)
-#define ID_BAG           (0x1D00 + 0x70)
-#define ID_DISTANCE      (0x1D00 + 0x80)
-#define ID_HARMONICA     (0x1D00 + 0x90)
-#define ID_FUR           (0x1D00 + 0xA0)
-#define ID_KEYHOLDER     (0x1D00 + 0xB0)
-#define ID_MIRROR        (0x1D00 + 0xC0)
-#define ID_PEAK          (0x1D00 + 0xD0)
-#define ID_BELL          (0x1D00 + 0xE0)
-#define ID_FLOAT         (0x1D00 + 0xF0)
-#define ID_HEATER        (0x1E00 + 0x00)
-#define ID_GPS           (0x1E00 + 0x10)
-#define ID_DOOR          (0x1E00 + 0x20)
-#define ID_HANGER        (0x1E00 + 0x30)
-#define ID_TUNER         (0x1E00 + 0x40)
+#define ID_BAG           (0x1D00 + 0x10)
+#define ID_BELL          (0x1D00 + 0x20)
+#define ID_CONDUCTOR     (0x1D00 + 0x30)
+#define ID_DISTANCE      (0x1D00 + 0x40)
+// #define ID_DOOR          (0x1D00 + 0x50)
+#define ID_FLOAT         (0x1D00 + 0x60)
+#define ID_FUR           (0x1D00 + 0x70)
+#define ID_GPS           (0x1D00 + 0x80)
+#define ID_HANGER        (0x1D00 + 0x90)
+#define ID_HARMONICA     (0x1D00 + 0xA0)
+#define ID_HEATER        (0x1D00 + 0xB0)
+#define ID_KEYHOLDER     (0x1D00 + 0xC0)
+#define ID_LOOK_AT       (0x1D00 + 0xD0)
+#define ID_MIRROR        (0x1D00 + 0xE0)
+// #define ID_MOTION_SENSOR (0x1D00 + 0xF0)
+#define ID_PEAK          (0x1E00 + 0x00)
+#define ID_ROCKING       (0x1E00 + 0x10)
+#define ID_THUNDER       (0x1E00 + 0x20)
+
+// #define ID_TUNER         (0x1E00 + 0x30)
+// #define ID_RELAY_CTRLER  (0x1E00 + 0x40)
+// #define ID_POINT_MOTOR   (0x1E00 + 0x50)
 
 //
 #define ID_EVERYONE      (0x1F00 + 0x00)
 //(choice)
-#define IDENTITY         ID_FUR
+#define IDENTITY         ID_HANGER
 
 //
 #define LONELY_TO_DIE    (30000)

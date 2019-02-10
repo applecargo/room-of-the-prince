@@ -25,11 +25,9 @@ void gotMessageCallback(uint32_t from, String & msg) { // REQUIRED
     // so, what to do, then?
     switch (message)
     {
-
     case PEAK_WORD_PPI_PPI_PPI:
       Serial.println("peak: ppi ppi ppi");
       signal_task.restartDelayed(500);
-
       break;
     default:
       ;

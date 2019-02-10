@@ -17,6 +17,9 @@ int pcontrol_start = 0;
 int pcontrol_target = 0;
 int control_count = 0;
 
+//
+extern Task msg_hanger_task;
+
 // room protocol
 static int message = 0;
 static char msg_cstr[MSG_LENGTH_MAX] = {0, };
@@ -33,6 +36,8 @@ void gotMessageCallback(uint32_t from, String & msg) { // REQUIRED
     case BELL_WORD_RING_RING_RING:
       Serial.println("bell: ring ring.");
       hit_task.restartDelayed(100);
+      // also, 'hanger'!
+      msg_hanger_task.restartDelayed(800);
       break;
     default:
       ;
@@ -96,6 +101,15 @@ void hit() {
 }
 Task hit_task(100, 2, &hit);
 
+// msg_hanger
+void msg_hanger() {
+  // also, hanger!
+  sprintf(msg_cstr, "[%06d:%03d] To hanger: you, too, amigo!", ID_HANGER, HANGER_WORD_SING);
+  String str = String(msg_cstr);
+  mesh.sendBroadcast(str);
+}
+Task msg_hanger_task(0, TASK_ONCE, &msg_hanger);
+
 // pcontrol
 void pcontrol() {
   static int angle;
@@ -150,6 +164,7 @@ void setup_member() {
 
   runner.addTask(hit_task);
   runner.addTask(pcontrol_task);
+  runner.addTask(msg_hanger_task);
 
   hit_task.restart();
 }

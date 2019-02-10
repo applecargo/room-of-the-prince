@@ -48,9 +48,9 @@ void compose_send_display_msg()
   case 0:
     sprintf(msg_cstr, "[%06d:%03d] To lookat: look around now!", ID_LOOK_AT, LOOKAT_WORD_LOOK_AROUND);
     break;
-  // case 1:
-  //   sprintf(msg_cstr, "[%06d:%03d] To thunder: go rrrrrrrrr now!", ID_THUNDER, THUNDER_WORD_RRRRR);
-  //   break;
+  case 1:
+    sprintf(msg_cstr, "[%06d:%03d] To thunder: go rrrrrrrrr now!", ID_THUNDER, THUNDER_WORD_RRRRR);
+    break;
   case 2:
     sprintf(msg_cstr, "[%06d:%03d] To bag: handle up now!", ID_BAG, BAG_WORD_HANDLE_UP);
     break;
@@ -60,9 +60,9 @@ void compose_send_display_msg()
   case 4:
     sprintf(msg_cstr, "[%06d:%03d] To bag: sing now!", ID_BAG, BAG_WORD_SING);
     break;
-  case 5:
-    sprintf(msg_cstr, "[%06d:%03d] To harmonica: harmonica time! ha-mororo~~", ID_HARMONICA, HARMONICA_WORD_PLAY_START);
-    break;
+  // case 5:
+  //   sprintf(msg_cstr, "[%06d:%03d] To harmonica: harmonica time! ha-mororo~~", ID_HARMONICA, HARMONICA_WORD_PLAY_START);
+  //   break;
   case 6:
     sprintf(msg_cstr, "[%06d:%03d] To fur: speak out now!", ID_FUR, FUR_WORD_SING);
     break;
@@ -87,9 +87,9 @@ void compose_send_display_msg()
   case 13:
     sprintf(msg_cstr, "[%06d:%03d] To rocking: time to rock!!", ID_ROCKING, ROCKING_WORD_ROCK_ROCK_ROCK);
     break;
-  // case 14:
-  //   sprintf(msg_cstr, "[%06d:%03d] To bag: handle up now!", ID_BAG, BAG_WORD_HANDLE_UP);
-  //   break;
+  case 14:
+    sprintf(msg_cstr, "[%06d:%03d] To hanger: you, too, amigo!", ID_HANGER, HANGER_WORD_SING);
+    break;
   // case 15:
   //   sprintf(msg_cstr, "[%06d:%03d] To bag: handle up now!", ID_BAG, BAG_WORD_HANDLE_UP);
   //   break;
@@ -98,7 +98,7 @@ void compose_send_display_msg()
   }
   //
   states++;
-  if (states == 14) {
+  if (states == 15) {
     states = 0;
   }
   //

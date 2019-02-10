@@ -4,9 +4,9 @@ static Servo myservo1;
 static Servo myservo2;
 static Servo myservo3;
 #define HOLDING_ANGLE  40
-#define HOLDING_ANGLE2 40
+#define HOLDING_ANGLE2 36
 #define FALLING_ANGLE  22
-#define FALLING_ANGLE2 56
+#define FALLING_ANGLE2 52
 #define FALLING_TIME   1000
 #define HOLDING_TIME   200
 
