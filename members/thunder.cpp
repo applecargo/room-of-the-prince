@@ -75,6 +75,18 @@ void greeting() {
 }
 Task saying_greeting(10000, TASK_FOREVER, &greeting);
 
+// routine
+extern Task routine_task;
+void routine() {
+  static String msg = "";
+  sprintf(msg_cstr, "[%06d:%03d]", ID_FLOAT, FLOAT_WORD_TURN_TURN);
+  msg = String(msg_cstr);
+  mesh.sendBroadcast(msg);
+  //
+  routine_task.restartDelayed(random(1000*60*3, 1000*60*6));
+}
+Task routine_task(0, TASK_ONCE, &routine);
+
 // make rrrrr noise
 void rrrrr() {
   static int rrrrr_freq = 5;
@@ -155,6 +167,9 @@ void setup_member() {
   //tasks
   runner.addTask(saying_greeting);
   saying_greeting.enable();
+  runner.addTask(routine_task);
+  routine_task.restart();
+
   runner.addTask(rrrrr_task);
   runner.addTask(reaction_task);
 

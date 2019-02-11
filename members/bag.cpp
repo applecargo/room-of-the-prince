@@ -8,7 +8,7 @@ static Servo myservo;
 //#define HANDLE_UP_TARGET 45 // MIN
 #define HANDLE_UP_TARGET 50 // for 90 deg.
 //#define HANDLE_DOWN_TARGET 151 // MAX
-#define HANDLE_DOWN_TARGET 152 // for firm close
+#define HANDLE_DOWN_TARGET 153 // for firm close
 
 // my tasks
 extern Task handle_up_task;
@@ -80,6 +80,18 @@ void greeting() {
 }
 Task saying_greeting(10000, TASK_FOREVER, &greeting);
 
+// routine
+extern Task routine_task;
+void routine() {
+  static String msg = "";
+  sprintf(msg_cstr, "[%06d:%03d]", ID_FUR, FUR_WORD_SING);
+  msg = String(msg_cstr);
+  mesh.sendBroadcast(msg);
+  //
+  routine_task.restartDelayed(random(1000*60*5, 1000*60*8));
+}
+Task routine_task(0, TASK_ONCE, &routine);
+
 // handle up
 void handle_up() {
   int angle = HANDLE_UP_TARGET;
@@ -110,7 +122,7 @@ void sing() {
   // "P#SSS@AAAA" - P: P (play), SSS: song #, A: amp. (x 1000)
   // "SXXXXXXXXX" - S: S (stop)
 
-  sprintf(cmdstr, "P#%03d@%04d", 1, 1000); // play song #1, with amplitude == 1.0
+  sprintf(cmdstr, "P#%03d@%04d", random(1, 21), 1000); // play song #1, with amplitude == 1.0
   Wire.beginTransmission(I2C_ADDR);
   Wire.write(cmdstr, CMD_LENGTH);
   Wire.endTransmission();
@@ -128,6 +140,9 @@ void setup_member() {
   //tasks
   runner.addTask(saying_greeting);
   saying_greeting.enable();
+  runner.addTask(routine_task);
+  routine_task.enable();
+  //
   runner.addTask(handle_up_task);
   runner.addTask(handle_down_task);
   runner.addTask(sing_task);

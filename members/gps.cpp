@@ -58,6 +58,18 @@ void greeting() {
 }
 Task saying_greeting(10000, TASK_FOREVER, &greeting);
 
+// routine
+extern Task routine_task;
+void routine() {
+  static String msg = "";
+  sprintf(msg_cstr, "[%06d:%03d]", ID_KEYHOLDER, KEYHOLDER_WORD_FALLING_KEYS);
+  msg = String(msg_cstr);
+  mesh.sendBroadcast(msg);
+  //
+  routine_task.restartDelayed(random(1000*60*6, 1000*60*7));
+}
+Task routine_task(0, TASK_ONCE, &routine);
+
 // gps
 void gps_reader() {
 
@@ -154,6 +166,9 @@ void setup_member() {
   //tasks
   runner.addTask(saying_greeting);
   saying_greeting.enable();
+  runner.addTask(routine_task);
+  routine_task.restart();
+
   runner.addTask(gps_reader_task);
   gps_reader_task.enable();
   runner.addTask(reaction_task);

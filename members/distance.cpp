@@ -105,6 +105,9 @@ void setup_member() {
   //tasks
   runner.addTask(saying_greeting);
   saying_greeting.enable();
+  // runner.addTask(routine_task);
+  // routine_task.restart();
+
   runner.addTask(distance_task);
   distance_task.enable();
   runner.addTask(reaction_task);

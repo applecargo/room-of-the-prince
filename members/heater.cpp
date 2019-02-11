@@ -72,6 +72,18 @@ void greeting() {
 }
 Task saying_greeting(10000, TASK_FOREVER, &greeting);
 
+// routine
+extern Task routine_task;
+void routine() {
+  static String msg = "";
+  sprintf(msg_cstr, "[%06d:%03d]", ID_HARMONICA, HARMONICA_WORD_PLAY_START);
+  msg = String(msg_cstr);
+  mesh.sendBroadcast(msg);
+  //
+  routine_task.restartDelayed(random(1000*60*5, 1000*60*8));
+}
+Task routine_task(0, TASK_ONCE, &routine);
+
 void fastturn() {
   analogWrite(D6,400);
   slowturn_task.restartDelayed(300);
@@ -106,6 +118,8 @@ void setup_member() {
 
   runner.addTask(saying_greeting);
   saying_greeting.enable();
+  runner.addTask(routine_task);
+  routine_task.restart();
 
   runner.addTask(fastturn_task);
   runner.addTask(slowturn_task);

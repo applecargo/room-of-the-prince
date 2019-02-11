@@ -71,6 +71,18 @@ void greeting() {
 }
 Task saying_greeting(10000, TASK_FOREVER, &greeting);
 
+// routine
+extern Task routine_task;
+void routine() {
+  static String msg = "";
+  sprintf(msg_cstr, "[%06d:%03d]", ID_THUNDER, THUNDER_WORD_RRRRR);
+  msg = String(msg_cstr);
+  mesh.sendBroadcast(msg);
+  //
+  routine_task.restartDelayed(random(1000*60*7, 1000*60*12));
+}
+Task routine_task(0, TASK_ONCE, &routine);
+
 void fastturn() {
   analogWrite(D6,500);
   slowturn_task.restartDelayed(10000);
@@ -98,6 +110,8 @@ void setup_member() {
 
   runner.addTask(saying_greeting);
   saying_greeting.enable();
+  runner.addTask(routine_task);
+  routine_task.enable();
 
   runner.addTask(fastturn_task);
   runner.addTask(slowturn_task);
