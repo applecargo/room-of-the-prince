@@ -81,13 +81,22 @@ void routine() {
   msg = String(msg_cstr);
   mesh.sendBroadcast(msg);
   //
-  routine_task.restartDelayed(random(1000*60*5, 1000*60*10));
+  routine_task.restartDelayed(random(1000*60*3, 1000*60*5));
 }
 Task routine_task(0, TASK_ONCE, &routine);
 
 // hit!
 void hit() {
+  static int count = 0;
   if (hit_task.isFirstIteration()) {
+    count = 0;
+    Serial.println("hit! start.");
+  }
+  if (count % 3 == 0) {
+    //
+    myservo.write(RELEASE_ANGLE);
+    //
+  } else if (count % 3 == 1) {
     //
     myservo.write(HITTING_ANGLE);
     //
@@ -110,8 +119,10 @@ void hit() {
     //
     control_count = 0;
   }
+  //
+  count++;
 }
-Task hit_task(100, 2, &hit);
+Task hit_task(100, 3, &hit);
 
 // msg_hanger
 void msg_hanger() {
@@ -143,7 +154,7 @@ void pcontrol() {
     Serial.println(" deg.");
     //
     myservo.write(angle);
-    pcontrol_task.restartDelayed(300);
+    pcontrol_task.restartDelayed(400);
   }
   else {
     // stand-by processes

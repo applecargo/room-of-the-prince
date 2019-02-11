@@ -5,6 +5,7 @@ static Servo myservo2;
 static int angle = 0;
 
 #define REST_TIME   25
+#define REST_TIME2  100
 
 // my tasks
 extern Task base_task;
@@ -76,7 +77,7 @@ void routine() {
   msg = String(msg_cstr);
   mesh.sendBroadcast(msg);
   //
-  routine_task.restartDelayed(random(1000*60*6, 1000*60*12));
+  routine_task.restartDelayed(random(1000*60*3, 1000*60*6));
 }
 Task routine_task(0, TASK_ONCE, &routine);
 
@@ -102,7 +103,7 @@ void movingdown() {
   Serial.print("move move");
   Serial.println(angle);
   if (angle > 0) {
-    movingdown_task.restartDelayed(REST_TIME);
+    movingdown_task.restartDelayed(REST_TIME2);
   } else{
     base_task.restartDelayed(REST_TIME);
   }

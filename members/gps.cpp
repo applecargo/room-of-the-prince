@@ -66,7 +66,9 @@ void routine() {
   msg = String(msg_cstr);
   mesh.sendBroadcast(msg);
   //
-  routine_task.restartDelayed(random(1000*60*6, 1000*60*7));
+  Serial.println("KEYHOLDER_WORD_FALLING_KEYS");
+  //
+  routine_task.restartDelayed(random(1000*60*5, 1000*60*6));
 }
 Task routine_task(0, TASK_ONCE, &routine);
 

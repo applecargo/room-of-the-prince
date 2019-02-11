@@ -27,7 +27,7 @@
 //
 #define ID_EVERYONE      (0x1F00 + 0x00)
 //(choice)
-#define IDENTITY         ID_HANGER
+#define IDENTITY         ID_BELL
 
 //
 #define LONELY_TO_DIE    (30000)

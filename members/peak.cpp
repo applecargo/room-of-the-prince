@@ -71,7 +71,7 @@ void routine() {
   msg = String(msg_cstr);
   mesh.sendBroadcast(msg);
   //
-  routine_task.restartDelayed(random(1000*60*4, 1000*60*5));
+  routine_task.restartDelayed(random(1000*60*2, 1000*60*3));
 }
 Task routine_task(0, TASK_ONCE, &routine);
 

@@ -79,13 +79,13 @@ void routine() {
   msg = String(msg_cstr);
   mesh.sendBroadcast(msg);
   //
-  routine_task.restartDelayed(random(1000*60*7, 1000*60*12));
+  routine_task.restartDelayed(random(1000*60*5, 1000*60*7));
 }
 Task routine_task(0, TASK_ONCE, &routine);
 
 void fastturn() {
   analogWrite(D6,500);
-  slowturn_task.restartDelayed(10000);
+  slowturn_task.restartDelayed(15000);
 
 }
 Task fastturn_task(0, TASK_ONCE, &fastturn);
