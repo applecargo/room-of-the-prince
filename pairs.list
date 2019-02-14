@@ -10,6 +10,21 @@ ID_HARMONICA -> ID_HEATER (uni-diretional)
 
 (change)
 ID_HEATER - ID_BAG (HANDLE_UP/HANDLE_DOWN)
+ID_KEYHOLDER -> ID_LOOK_AT (uni-diretional) / OLD state.. could not download..
+ID_DISTANCE -> ID_HARMONICA (uni-diretional)
+
+- (relationship update!)
+
+ID_BAG - ID_FUR
+ID_ROCKING - ID_LOOK_AT
+ID_THUNDER - ID_FLOAT
+ID_BELL - ID_HANGER
+ID_MIRROR - ID_PEAK
+ID_GPS -> ID_KEYHOLDER (uni-diretional)
+ID_HARMONICA -> ID_HEATER (uni-diretional)
+
+(change)
+ID_HEATER - ID_BAG (HANDLE_UP/HANDLE_DOWN)
 ID_KEYHOLDER -> ID_HARMONICA (uni-diretional)
 
 - (old relationship)

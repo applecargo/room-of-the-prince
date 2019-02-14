@@ -94,7 +94,7 @@ void routine() {
   msg = String(msg_cstr);
   mesh.sendBroadcast(msg);
   //
-  routine_task.restartDelayed(random(1000*60*5, 1000*60*8));
+  routine_task.restartDelayed(random(1000*60*5, 1000*60*6));
 }
 Task routine_task(0, TASK_ONCE, &routine);
 
@@ -108,7 +108,7 @@ void handle_up() {
   //
   myservo.attach(SERVO_PIN);
   myservo.write(angle);
-  handle_release_task.restartDelayed(200);
+  handle_release_task.restartDelayed(500);
 }
 Task handle_up_task(0, TASK_ONCE, &handle_up);
 
@@ -122,7 +122,7 @@ void handle_down() {
   //
   myservo.attach(SERVO_PIN);
   myservo.write(angle);
-  handle_release_task.restartDelayed(200);
+  handle_release_task.restartDelayed(500);
 }
 Task handle_down_task(0, TASK_ONCE, &handle_down);
 

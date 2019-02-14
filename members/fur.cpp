@@ -76,7 +76,7 @@ void routine() {
   msg = String(msg_cstr);
   mesh.sendBroadcast(msg);
   //
-  routine_task.restartDelayed(random(1000*60*5, 1000*60*8));
+  routine_task.restartDelayed(random(1000*60*4, 1000*60*5));
 }
 Task routine_task(0, TASK_ONCE, &routine);
 
@@ -85,7 +85,7 @@ void sing() {
   // "P#SSS@AAAA" - P: P (play), SSS: song #, A: amp. (x 1000)
   // "SXXXXXXXXX" - S: S (stop)
 
-  sprintf(cmdstr, "P#%03d@%04d", random(1, 7), 600); // play song #1, with amplitude == 1.0
+  sprintf(cmdstr, "P#%03d@%04d", random(1, 7), 500); // play song #1, with amplitude == 1.0
   Wire.beginTransmission(I2C_ADDR);
   Wire.write(cmdstr, CMD_LENGTH);
   Wire.endTransmission();

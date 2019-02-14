@@ -156,8 +156,8 @@ void setup_member() {
   runner.addTask(saying_greeting);
   saying_greeting.enable();
   //
-  runner.addTask(button_task);
-  button_task.enable();
+  // runner.addTask(button_task);
+  // button_task.enable();
   //
   // runner.addTask(words_looping_task);
   // words_looping_task.enable();
