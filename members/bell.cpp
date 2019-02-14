@@ -1,8 +1,7 @@
 // servo
+#define SERVO_PIN D6
 #include <Servo.h>
 static Servo myservo;
-
-//
 #define HITTING_ANGLE 87
 #define RELEASE_ANGLE 60
 #define STABILIZE_ANGLE 53
@@ -18,6 +17,9 @@ int pcontrol_target = 0;
 int control_count = 0;
 
 //
+extern Task servo_release_task;
+
+//
 extern Task msg_hanger_task;
 
 // room protocol
@@ -31,7 +33,8 @@ void gotMessageCallback(uint32_t from, String & msg) { // REQUIRED
   int receipent = msg.substring(1, 7).toInt();
   if (receipent == IDENTITY) {
     message = msg.substring(8, 12).toInt();
-    reaction_task.restart();
+    if (reaction_task.getRunCounter() == 0)
+      reaction_task.restart();
     switch (message) {
     case BELL_WORD_RING_RING_RING:
       Serial.println("bell: ring ring.");
@@ -59,15 +62,18 @@ void reaction() {
   else {
     ; // what to do?
   }
+  if (reaction_task.isLastIteration()) {
+    //
+  }
   mask = mask >> 1;
   count++;
 }
-Task reaction_task(10, 16, &reaction);
+Task reaction_task(10, 17, &reaction);
 
 // saying hello
 void greeting() {
   static String msg = "";
-  sprintf(msg_cstr, "[%06d:%03d]", ID_EVERYONE, BELL_WORD_HELLO); //"signal out~ take my signal~~ to every~~"
+  sprintf(msg_cstr, "[%06d:%03d]", memberList[random(NUM_OF_MEMBERS)], BELL_WORD_HELLO); //"signal out~ take my signal~~ to every~~"
   msg = String(msg_cstr);
   mesh.sendBroadcast(msg);
 }
@@ -81,7 +87,7 @@ void routine() {
   msg = String(msg_cstr);
   mesh.sendBroadcast(msg);
   //
-  routine_task.restartDelayed(random(1000*60*3, 1000*60*5));
+  routine_task.restartDelayed(random(1000*60*5, 1000*60*7));
 }
 Task routine_task(0, TASK_ONCE, &routine);
 
@@ -94,11 +100,15 @@ void hit() {
   }
   if (count % 3 == 0) {
     //
+    myservo.attach(SERVO_PIN);
     myservo.write(RELEASE_ANGLE);
+    // servo_release_task.restartDelayed(200);
     //
   } else if (count % 3 == 1) {
     //
+    myservo.attach(SERVO_PIN);
     myservo.write(HITTING_ANGLE);
+    // servo_release_task.restartDelayed(200);
     //
     Serial.print("bell, bell, bell! : ");
     Serial.print(HITTING_ANGLE);
@@ -106,7 +116,9 @@ void hit() {
     //
   } else {
     //
+    myservo.attach(SERVO_PIN);
     myservo.write(RELEASE_ANGLE);
+    servo_release_task.restartDelayed(200);
     //
     Serial.print("release to .. : ");
     Serial.print(RELEASE_ANGLE);
@@ -153,7 +165,9 @@ void pcontrol() {
     Serial.print(angle);
     Serial.println(" deg.");
     //
+    myservo.attach(SERVO_PIN);
     myservo.write(angle);
+    servo_release_task.restartDelayed(50);
     pcontrol_task.restartDelayed(400);
   }
   else {
@@ -175,10 +189,16 @@ void pcontrol() {
 }
 Task pcontrol_task(0, TASK_ONCE, &pcontrol); // hit -> 100ms -> step back -> 50ms -> slowly move to rest pos.
 
+// pcontrol release
+void servo_release() {
+  myservo.detach();
+}
+Task servo_release_task(0, TASK_ONCE, &servo_release);
+
 //
 void setup_member() {
   //servo
-  myservo.attach(D6);
+  // myservo.attach(D6);
 
   //
   runner.addTask(saying_greeting);
@@ -189,6 +209,9 @@ void setup_member() {
   runner.addTask(reaction_task);
   runner.addTask(hit_task);
   runner.addTask(pcontrol_task);
+
+  runner.addTask(servo_release_task);
+
   runner.addTask(msg_hanger_task);
 
   hit_task.restart();

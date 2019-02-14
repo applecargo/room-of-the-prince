@@ -3,6 +3,7 @@
 #include "bag/i2c_protocol.h"
 
 // servo
+#define SERVO_PIN D6
 #include <Servo.h>
 static Servo myservo;
 //#define HANDLE_UP_TARGET 45 // MIN
@@ -13,6 +14,7 @@ static Servo myservo;
 // my tasks
 extern Task handle_up_task;
 extern Task handle_down_task;
+extern Task handle_release_task;
 extern Task sing_task;
 extern Task saying_greeting;
 
@@ -30,7 +32,8 @@ void gotMessageCallback(uint32_t from, String & msg) { // REQUIRED
     // what it says?
     message = msg.substring(8, 12).toInt();
     // i ve heard. reaction.
-    reaction_task.restart();
+    if (reaction_task.getRunCounter() == 0)
+      reaction_task.restart();
     // so, what to do, then?
     switch (message)
     {
@@ -66,15 +69,18 @@ void reaction() {
   else {
     ; // what to do?
   }
+  if (reaction_task.isLastIteration()) {
+    //
+  }
   mask = mask >> 1;
   count++;
 }
-Task reaction_task(10, 16, &reaction);
+Task reaction_task(10, 17, &reaction);
 
 // saying hello
 void greeting() {
   static String msg = "";
-  sprintf(msg_cstr, "[%06d:%03d]", ID_EVERYONE, BAG_WORD_HELLO); //"Sir! 9 of the 10!"
+  sprintf(msg_cstr, "[%06d:%03d]", memberList[random(NUM_OF_MEMBERS)], BAG_WORD_HELLO); //"Sir! 9 of the 10!"
   msg = String(msg_cstr);
   mesh.sendBroadcast(msg);
 }
@@ -88,7 +94,7 @@ void routine() {
   msg = String(msg_cstr);
   mesh.sendBroadcast(msg);
   //
-  routine_task.restartDelayed(random(1000*60*5, 1000*60*6.5));
+  routine_task.restartDelayed(random(1000*60*5, 1000*60*8));
 }
 Task routine_task(0, TASK_ONCE, &routine);
 
@@ -100,7 +106,9 @@ void handle_up() {
   Serial.print(angle);
   Serial.println(" deg.");
   //
+  myservo.attach(SERVO_PIN);
   myservo.write(angle);
+  handle_release_task.restartDelayed(200);
 }
 Task handle_up_task(0, TASK_ONCE, &handle_up);
 
@@ -112,9 +120,17 @@ void handle_down() {
   Serial.print(angle);
   Serial.println(" deg.");
   //
+  myservo.attach(SERVO_PIN);
   myservo.write(angle);
+  handle_release_task.restartDelayed(200);
 }
 Task handle_down_task(0, TASK_ONCE, &handle_down);
+
+// handle release
+void handle_release() {
+  myservo.detach();
+}
+Task handle_release_task(0, TASK_ONCE, &handle_release);
 
 // sing!
 void sing() {
@@ -135,7 +151,7 @@ void setup_member() {
   Wire.begin();
 
   //servo
-  myservo.attach(D6);
+  // myservo.attach(SERVO_PIN);
 
   //tasks
   runner.addTask(saying_greeting);
@@ -145,6 +161,7 @@ void setup_member() {
   //
   runner.addTask(handle_up_task);
   runner.addTask(handle_down_task);
+  runner.addTask(handle_release_task);
   runner.addTask(sing_task);
   runner.addTask(reaction_task);
 

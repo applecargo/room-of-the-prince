@@ -1,6 +1,8 @@
 // servo
+#define SERVO_PIN D6
 #include <Servo.h>
 static Servo myservo;
+extern Task servo_release_task;
 
 // my tasks
 extern Task lookat_task;
@@ -20,7 +22,8 @@ void gotMessageCallback(uint32_t from, String & msg) { // REQUIRED
     // what it says?
     message = msg.substring(8, 12).toInt();
     // i ve heard. reaction.
-    reaction_task.restart();
+    if (reaction_task.getRunCounter() == 0)
+      reaction_task.restart();
     // so, what to do, then?
     switch (message)
     {
@@ -43,20 +46,23 @@ void reaction() {
     count = 0;
   }
   if ((message & mask) == 0) {
-    tone(D7, 1500 + count * 50);
+    tone(D7, 800 + count * 50);
   }
   else {
+    noTone(D7);
+  }
+  if (reaction_task.isLastIteration()) {
     noTone(D7);
   }
   mask = mask >> 1;
   count++;
 }
-Task reaction_task(10, 16, &reaction);
+Task reaction_task(10, 17, &reaction);
 
 // saying hello
 void greeting() {
   static String msg = "";
-  sprintf(msg_cstr, "[%06d:%03d]", ID_EVERYONE, LOOKAT_WORD_HELLO); //"Me? I do look at you!"
+  sprintf(msg_cstr, "[%06d:%03d]", memberList[random(NUM_OF_MEMBERS)], LOOKAT_WORD_HELLO); //"Me? I do look at you!"
   msg = String(msg_cstr);
   mesh.sendBroadcast(msg);
 }
@@ -82,15 +88,23 @@ void lookat() {
   Serial.print(angle);
   Serial.println(" deg.");
   //
+  myservo.attach(D6);
   myservo.write(angle);
+  servo_release_task.restartDelayed(100);
 }
 Task lookat_task(0, TASK_ONCE, &lookat);
+
+// servo release
+void servo_release() {
+  myservo.detach();
+}
+Task servo_release_task(0, TASK_ONCE, &servo_release);
 
 //setup_member
 void setup_member() {
 
   //servo
-  myservo.attach(D6);
+  // myservo.attach(D6);
 
   //tone
   pinMode(D7, OUTPUT);
@@ -105,5 +119,7 @@ void setup_member() {
   routine_task.enable();
   //
   runner.addTask(lookat_task);
+  //
+  runner.addTask(servo_release_task);
   runner.addTask(reaction_task);
 }

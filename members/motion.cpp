@@ -16,7 +16,8 @@ void gotMessageCallback(uint32_t from, String & msg) { // REQUIRED
     // what it says?
     message = msg.substring(8, 12).toInt();
     // i ve heard. reaction.
-    reaction_task.restart();
+    if (reaction_task.getRunCounter() == 0)
+      reaction_task.restart();
     // so, what to do, then?
     switch (message)
     {
@@ -42,15 +43,18 @@ void reaction() {
   else {
     digitalWrite(D7, LOW);
   }
+  if (reaction_task.isLastIteration()) {
+    digitalWrite(D7, LOW);
+  }
   mask = mask >> 1;
   count++;
 }
-Task reaction_task(10, 16, &reaction);
+Task reaction_task(10, 17, &reaction);
 
 // saying hello
 void greeting() {
   static String msg = "";
-  sprintf(msg_cstr, "[%06d:%03d]", ID_EVERYONE, MOTION_WORD_HELLO); //"Hello? My name is.. Mother Detroit."
+  sprintf(msg_cstr, "[%06d:%03d]", memberList[random(NUM_OF_MEMBERS)], MOTION_WORD_HELLO); //"Hello? My name is.. Mother Detroit."
   msg = String(msg_cstr);
   mesh.sendBroadcast(msg);
 }
@@ -77,7 +81,8 @@ void motion() {
       mesh.sendBroadcast(msg);
       //
       message = MOTION_WORD_MOTION_START;
-      reaction_task.restart();
+      if (reaction_task.getRunCounter() == 0)
+        reaction_task.restart();
     } else {
       // Serial.println("motion stop.");
       sprintf(msg_cstr, "[%06d:%03d] To everyone: Uhm, my world is tran·quilo.", ID_EVERYONE, MOTION_WORD_MOTION_END);
@@ -85,7 +90,8 @@ void motion() {
       mesh.sendBroadcast(msg);
       //
       message = MOTION_WORD_MOTION_END;
-      reaction_task.restart();
+      if (reaction_task.getRunCounter() == 0)
+        reaction_task.restart();
     }
   }
   motion_prev = motion;

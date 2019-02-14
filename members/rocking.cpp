@@ -27,7 +27,8 @@ void gotMessageCallback(uint32_t from, String & msg) { // REQUIRED
     // what it says?
     message = msg.substring(8, 12).toInt();
     // i ve heard. reaction.
-    reaction_task.restart();
+    if (reaction_task.getRunCounter() == 0)
+      reaction_task.restart();
     // so, what to do, then?
     switch (message)
     {
@@ -55,15 +56,18 @@ void reaction() {
   else {
     noTone(D7);
   }
+  if (reaction_task.isLastIteration()) {
+    noTone(D7);
+  }
   mask = mask >> 1;
   count++;
 }
-Task reaction_task(10, 16, &reaction);
+Task reaction_task(10, 17, &reaction);
 
 // saying hello
 void greeting() {
   static String msg = "";
-  sprintf(msg_cstr, "[%06d:%03d]", ID_EVERYONE, ROCKING_WORD_HELLO); //"ROCK is the spirit!"
+  sprintf(msg_cstr, "[%06d:%03d]", memberList[random(NUM_OF_MEMBERS)], ROCKING_WORD_HELLO); //"ROCK is the spirit!"
   msg = String(msg_cstr);
   mesh.sendBroadcast(msg);
 }

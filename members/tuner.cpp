@@ -21,7 +21,8 @@ void gotMessageCallback(uint32_t from, String & msg) { // REQUIRED
     // what it says?
     message = msg.substring(8, 12).toInt();
     // i ve heard. reaction.
-    reaction_task.restart();
+    if (reaction_task.getRunCounter() == 0)
+      reaction_task.restart();
     // so, what to do, then?
     switch (message)
     {
@@ -47,15 +48,18 @@ void reaction() {
   else {
     // digitalWrite(D7, LOW);
   }
+  if (reaction_task.isLastIteration()) {
+    // digitalWrite(D7, LOW);
+  }
   mask = mask >> 1;
   count++;
 }
-Task reaction_task(10, 16, &reaction);
+Task reaction_task(10, 17, &reaction);
 
 // saying hello
 void greeting() {
   static String msg = "";
-  sprintf(msg_cstr, "[%06d:%03d]", ID_EVERYONE, TUNER_WORD_HELLO); //"I am Tuba Carlos. Don't worry to much about tones. Just let it go. Chill-out~"
+  sprintf(msg_cstr, "[%06d:%03d]", memberList[random(NUM_OF_MEMBERS)], TUNER_WORD_HELLO); //"I am Tuba Carlos. Don't worry to much about tones. Just let it go. Chill-out~"
   msg = String(msg_cstr);
   mesh.sendBroadcast(msg);
 }
@@ -79,7 +83,8 @@ void tune() {
       mesh.sendBroadcast(msg);
       //
       message = TUNER_WORD_THIS_IS_CORRECT;
-      reaction_task.restart();
+      if (reaction_task.getRunCounter() == 0)
+        reaction_task.restart();
     } else if (level == TUNE_LOW) {
       Serial.println("the tune is a bit low_____...");
       sprintf(msg_cstr, "[%06d:%03d] To everyone: one low ball!", ID_EVERYONE, TUNER_WORD_THIS_IS_LOW);
@@ -87,7 +92,8 @@ void tune() {
       mesh.sendBroadcast(msg);
       //
       message = TUNER_WORD_THIS_IS_LOW;
-      reaction_task.restart();
+      if (reaction_task.getRunCounter() == 0)
+        reaction_task.restart();
     } else if (level == TUNE_HIGH) {
       Serial.println("the tune is a bit high!!...");
       sprintf(msg_cstr, "[%06d:%03d] To everyone: one high ball!", ID_EVERYONE, TUNER_WORD_THIS_IS_HIGH);
@@ -95,7 +101,8 @@ void tune() {
       mesh.sendBroadcast(msg);
       //
       message = TUNER_WORD_THIS_IS_HIGH;
-      reaction_task.restart();
+      if (reaction_task.getRunCounter() == 0)
+        reaction_task.restart();
     }
   }
   level_prev = level;

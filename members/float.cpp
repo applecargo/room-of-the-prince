@@ -1,10 +1,4 @@
-// i2c
-#include <Wire.h>
-#include "fur/i2c_protocol.h"
-
-// servo
-#include <Servo.h>
-
+//tasks
 extern Task fastturn_task;
 extern Task slowturn_task;
 extern Task rest_task;
@@ -28,11 +22,11 @@ void gotMessageCallback(uint32_t from, String & msg) { // REQUIRED
     // what it says?
     message = msg.substring(8, 12).toInt();
     // i ve heard. reaction.
-    reaction_task.restart();
+    if (reaction_task.getRunCounter() == 0)
+      reaction_task.restart();
     // so, what to do, then?
     switch (message)
     {
-
     case FLOAT_WORD_TURN_TURN:
       Serial.println("float: turn turn ");
       fastturn_task.restartDelayed(100);
@@ -57,15 +51,18 @@ void reaction() {
   else {
     ; // what to do?
   }
+  if (reaction_task.isLastIteration()) {
+    //
+  }
   mask = mask >> 1;
   count++;
 }
-Task reaction_task(10, 16, &reaction);
+Task reaction_task(10, 17, &reaction);
 
 // saying hello
 void greeting() {
   static String msg = "";
-  sprintf(msg_cstr, "[%06d:%03d]", ID_EVERYONE, FLOAT_WORD_HELLO); //"(turn turn turn)"
+  sprintf(msg_cstr, "[%06d:%03d]", memberList[random(NUM_OF_MEMBERS)], FLOAT_WORD_HELLO); //"(turn turn turn)"
   msg = String(msg_cstr);
   mesh.sendBroadcast(msg);
 }
@@ -79,7 +76,7 @@ void routine() {
   msg = String(msg_cstr);
   mesh.sendBroadcast(msg);
   //
-  routine_task.restartDelayed(random(1000*60*5, 1000*60*7));
+  routine_task.restartDelayed(random(1000*60*7, 1000*60*12));
 }
 Task routine_task(0, TASK_ONCE, &routine);
 
@@ -105,7 +102,6 @@ Task rest_task(0, TASK_ONCE, &rest);
 
 void setup_member() {
   //i2c master
-  Wire.begin();
   pinMode(D6, OUTPUT);
 
   runner.addTask(saying_greeting);

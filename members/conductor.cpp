@@ -25,12 +25,12 @@ void gotMessageCallback(uint32_t from, String & msg) { // REQUIRED
 // some reaction for received msg.
 void reaction() {
 }
-Task reaction_task(10, 16, &reaction);
+Task reaction_task(10, 17, &reaction);
 
 // saying hello
 void greeting() {
   static String msg = "";
-  sprintf(msg_cstr, "[%06d:%03d]", ID_EVERYONE, CONDUCTOR_WORD_HELLO); //"An-nyung, nan na-da. Nae-mal jal duel-oe!"
+  sprintf(msg_cstr, "[%06d:%03d]", memberList[random(NUM_OF_MEMBERS)], CONDUCTOR_WORD_HELLO); //"An-nyung, nan na-da. Nae-mal jal duel-oe!"
   msg = String(msg_cstr);
   mesh.sendBroadcast(msg);
 }

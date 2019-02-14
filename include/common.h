@@ -27,7 +27,27 @@
 //
 #define ID_EVERYONE      (0x1F00 + 0x00)
 //(choice)
-#define IDENTITY         ID_CONDUCTOR
+#define IDENTITY         ID_LOOK_AT
+
+#define NUM_OF_MEMBERS 16
+int memberList[NUM_OF_MEMBERS] = {
+  ID_BAG, //1
+  ID_BELL, //2
+  ID_CONDUCTOR, //3
+  ID_DISTANCE, //4
+  ID_FLOAT, //5
+  ID_FUR, //6
+  ID_GPS, //7
+  ID_HANGER, //8
+  ID_HARMONICA, //9
+  ID_HEATER, //10
+  ID_KEYHOLDER, //11
+  ID_LOOK_AT, //12
+  ID_MIRROR, //13
+  ID_PEAK, //14
+  ID_ROCKING, //15
+  ID_THUNDER //16
+};
 
 //
 #define LONELY_TO_DIE    (30000)
