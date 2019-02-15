@@ -8,8 +8,8 @@
 static Servo myservo;
 //#define HANDLE_UP_TARGET 45 // MIN
 #define HANDLE_UP_TARGET 50 // for 90 deg.
-//#define HANDLE_DOWN_TARGET 151 // MAX
-#define HANDLE_DOWN_TARGET 153 // for firm close
+#define HANDLE_DOWN_TARGET 151 // MAX
+// #define HANDLE_DOWN_TARGET 153 // for firm close
 
 // my tasks
 extern Task handle_up_task;
@@ -122,7 +122,7 @@ void handle_down() {
   //
   myservo.attach(SERVO_PIN);
   myservo.write(angle);
-  handle_release_task.restartDelayed(500);
+  handle_release_task.restartDelayed(2000);
 }
 Task handle_down_task(0, TASK_ONCE, &handle_down);
 
@@ -138,7 +138,7 @@ void sing() {
   // "P#SSS@AAAA" - P: P (play), SSS: song #, A: amp. (x 1000)
   // "SXXXXXXXXX" - S: S (stop)
 
-  sprintf(cmdstr, "P#%03d@%04d", random(1, 21), 1000); // play song #1, with amplitude == 1.0
+  sprintf(cmdstr, "P#%03d@%04d", random(1, 21), 900); // play song #1, with amplitude == 1.0
   Wire.beginTransmission(I2C_ADDR);
   Wire.write(cmdstr, CMD_LENGTH);
   Wire.endTransmission();

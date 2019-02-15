@@ -27,7 +27,7 @@
 //
 #define ID_EVERYONE      (0x1F00 + 0x00)
 //(choice)
-#define IDENTITY         ID_FUR
+#define IDENTITY         ID_ROCKING
 
 #define NUM_OF_MEMBERS 16
 int memberList[NUM_OF_MEMBERS] = {

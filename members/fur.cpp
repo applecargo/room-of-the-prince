@@ -75,6 +75,7 @@ void routine() {
   sprintf(msg_cstr, "[%06d:%03d]", ID_BAG, BAG_WORD_SING);
   msg = String(msg_cstr);
   mesh.sendBroadcast(msg);
+  Serial.println("to bag");
   //
   routine_task.restartDelayed(random(1000*60*4, 1000*60*5));
 }
@@ -101,7 +102,8 @@ void setup_member() {
   runner.addTask(saying_greeting);
   saying_greeting.enable();
   runner.addTask(routine_task);
-  routine_task.enable();
+  // routine_task.enable();
+  routine_task.restartDelayed(5000);
 
   runner.addTask(sing_task);
   runner.addTask(reaction_task);
