@@ -37,8 +37,6 @@
 # platformio
 .DS_Store
 */.DS_Store
-.pioenvs/*
-.piolibdeps/*
-members/*/.pioenvs/*
-members/*/.piolibdeps/*
+.pio/*
+members/*/.pio/*
 .travis.yml
